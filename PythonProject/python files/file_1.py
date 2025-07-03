@@ -31,6 +31,14 @@ color_BG = [random.randint(0,255) for _ in range(2000)]
 jump_force = -17
 gravity = 0.9
 
+def getZnak(num):
+    if (num > 0):
+        return 1
+    elif num < 0:
+        return -1
+    return 0
+
+
 player_speed = 5
 
 current_level = None
@@ -56,7 +64,7 @@ def ground3d(scroll_x):
             rect = block.rect.copy()
             rect.x -= scroll_x
             rect.y += i - 15
-            rect.height += 20
+            rect.height += 15 - i
             shade = max(0, 200 - i*5)
             pygame.draw.rect(screen, (shade, shade, shade), rect)
 
@@ -105,6 +113,7 @@ def init_level():
 
     blocks = [
         Block(-100, 400, 1200, 200),
+        Block(-100, 0, 1200, 200),
         Block(-250, -100, 400, 800),
         Block(1100, -100, 1300, 800),
 
@@ -177,12 +186,18 @@ def collisions(dx):
     on_ground = False
     for block in blocks:
         if player.colliderect(block.rect):
-            if vertical_momentum > 0:
-                player.bottom = block.rect.top
+            if vertical_momentum * getZnak(gravity) > 0:
+                if getZnak(gravity) > 0:
+                    player.bottom = block.rect.top
+                else:
+                    player.top = block.rect.bottom
                 vertical_momentum = 0
                 on_ground = True
-            elif vertical_momentum < 0:
-                player.top = block.rect.bottom
+            elif vertical_momentum * getZnak(gravity) < 0:
+                if getZnak(gravity) > 0:
+                    player.top = block.rect.bottom
+                else:
+                    player.bottom = block.rect.top
                 vertical_momentum = 0
 
     for triangle in triangles:
@@ -212,7 +227,7 @@ while running:
         dx = player_speed
 
     if keys[pygame.K_SPACE] and on_ground:
-        vertical_momentum = jump_force
+        vertical_momentum = jump_force * getZnak(gravity)
         on_ground = False
 
     collisions(dx)
