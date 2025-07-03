@@ -19,6 +19,13 @@ sound.play().set_volume(0.3)
 jump_force = -17
 gravity = 0.9
 
+def getZnak(num):
+    if (num > 0):
+        return 1
+    elif num < 0:
+        return -1
+    return 0
+
 player_speed = 5
 
 current_level = None
@@ -29,7 +36,7 @@ def ground3d(scroll_x):
             rect = block.rect.copy()
             rect.x -= scroll_x
             rect.y += i - 15
-            rect.height += 20
+            rect.height += 15 - i
             shade = max(0, 200 - i*5)
             pygame.draw.rect(screen, (shade, shade, shade), rect)
 
