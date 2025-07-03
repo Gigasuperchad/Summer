@@ -1,7 +1,10 @@
+import os
 import pygame
 import importlib
 
 clock = pygame.time.Clock()
+
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 with open("../titles/title.txt", "r") as file:
     title = file.read()
