@@ -5,6 +5,7 @@ clock = pygame.time.Clock()
 
 with open("../titles/title.txt", "r") as file:
     title = file.read()
+pygame.init()
 pygame.mixer.init()
 sound1 = pygame.mixer.Sound("../music/Mus_ANOTHER_HIM.oga")
 sound1.play(-1).set_volume(0.3)
