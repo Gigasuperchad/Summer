@@ -155,7 +155,7 @@ while running:
                 if event.button == 1:
                     if (screen_x / 2 - 300 + count <= event.pos[0] <= screen_x / 2 + count + 300) and (
                             screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
-                        current_level = "file_1"
+                        current_level = "file_4"
                     if (screen_x + count <= event.pos[0] <= screen_x + count + 600) and (
                             screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
                         current_level = "file_2"
