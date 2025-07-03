@@ -1,6 +1,4 @@
 import pygame
-import random
-import math
 import importlib
 from Classes import Block, Triangle, Door, Coin
 
@@ -17,17 +15,6 @@ pygame.mixer.music.stop()
 sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
 sound = pygame.mixer.Sound("../music/M.O.O.N. - Hydrogen.mp3")
 sound.play().set_volume(0.3)
-
-# Генерация случайных данных для фона (оставил как у вас)
-a = [random.randint(-1000, 1000) for _ in range(2000)]
-a_1 = [random.randint(-500, 500) for _ in range(200)]
-a_2 = [random.randint(-500, 500) for _ in range(200)]
-
-b = [random.randint(11, 20) for _ in range(2000)]
-c = [random.randint(0, 400) for _ in range(2000)]
-d = [random.randint(20, 100) for _ in range(200)]
-
-color_BG = [random.randint(0,255) for _ in range(2000)]
 
 jump_force = -17
 gravity = 0.9
@@ -117,18 +104,15 @@ on_ground = False
 scroll_x = 0
 scroll_y = 0
 
-# Параметры "невидимой рамки" (deadzone)
 deadzone_width = 20
 
 deadzone_left = screen_w // 2 - deadzone_width // 2
 deadzone_right = screen_w // 2 + deadzone_width // 2
 
-# Скорость сглаживания камеры (чем меньше — тем плавнее)
 camera_smooth_speed = 0.1
 
 door = Door(900, 400, width=60, height=100, coins_required=0)
 
-# Счетчик собранных монет
 coins_collected = 0
 font_coin = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
 
@@ -206,27 +190,23 @@ while running:
 
     collisions(dx)
 
-    # Проверка столкновения с монетами
     for coin in coins:
         coin.update()
         if not coin.collected and coin.collide(player):
             coin.collected = True
             coins_collected += 1
 
-    # Позиция игрока на экране с учётом сдвига камеры
     player_screen_x = player.x - scroll_x
     player_screen_y = player.y - scroll_y
 
     target_scroll_x = scroll_x
     target_scroll_y = scroll_y
 
-    # Горизонтальная камера с deadzone
     if player_screen_x < deadzone_left:
         target_scroll_x -= (deadzone_left - player_screen_x)
     elif player_screen_x > deadzone_right:
         target_scroll_x += (player_screen_x - deadzone_right)
 
-    # Плавно приближаемся к целевой позиции камеры
     scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
     scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
 
@@ -240,15 +220,12 @@ while running:
     for triangle in triangles:
         triangle.draw(screen, int(scroll_x), int(scroll_y))
 
-    # Рисуем монеты, которые не собраны
     for coin in coins:
         if not coin.collected:
             coin.draw(screen, int(scroll_x), int(scroll_y))
 
-    # Рисуем дверь
     door.draw(screen, coins_collected, scroll_x, scroll_y)
 
-    # Подсказка при соприкосновении с дверью
     if door.collide(player):
         font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 30)
         if door.is_open(coins_collected):

@@ -1,6 +1,5 @@
 import pygame
 import random
-import math
 import importlib
 from Classes import Block, Triangle, Door, Coin
 
@@ -118,7 +117,6 @@ def init_level():
         Block(1200, 260, 50, 200),
         Block(150, 150, 100, 50)
 
-
     ]
 
     triangles = [
@@ -144,8 +142,6 @@ def init_coins():
         Coin(1400, 340),
         Coin(2000, 340),
         Coin(2200, 340)
-
-
     ]
 
 player = pygame.Rect(screen_w//2 - 20 - 200, screen_h//2 - 20 , 60, 60)
@@ -156,18 +152,15 @@ on_ground = False
 scroll_x = 0
 scroll_y = 0
 
-# Параметры "невидимой рамки" (deadzone)
 deadzone_width = 20
 
 deadzone_left = screen_w // 2 - deadzone_width // 2
 deadzone_right = screen_w // 2 + deadzone_width // 2
 
-# Скорость сглаживания камеры (чем меньше — тем плавнее)
 camera_smooth_speed = 0.1
 
 door = Door(1001, 260, width=50, height=100, coins_required=6)
 
-# Счетчик собранных монет
 coins_collected = 0
 font_coin = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
 
@@ -245,21 +238,18 @@ while running:
 
     collisions(dx)
 
-    # Проверка столкновения с монетами
     for coin in coins:
         coin.update()
         if not coin.collected and coin.collide(player):
             coin.collected = True
             coins_collected += 1
 
-    # Позиция игрока на экране с учётом сдвига камеры
     player_screen_x = player.x - scroll_x
     player_screen_y = player.y - scroll_y
 
     target_scroll_x = scroll_x
     target_scroll_y = scroll_y
 
-    # Горизонтальная камера с deadzone
     if player_screen_x < deadzone_left:
         target_scroll_x -= (deadzone_left - player_screen_x)
     elif player_screen_x > deadzone_right:
@@ -281,15 +271,12 @@ while running:
     for triangle in triangles:
         triangle.draw(screen, int(scroll_x), int(scroll_y))
 
-    # Рисуем монеты, которые не собраны
     for coin in coins:
         if not coin.collected:
             coin.draw(screen, int(scroll_x), int(scroll_y))
 
-    # Рисуем дверь
     door.draw(screen, coins_collected, scroll_x, scroll_y)
 
-    # Подсказка при соприкосновении с дверью
     if door.collide(player):
         font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 30)
         if door.is_open(coins_collected):

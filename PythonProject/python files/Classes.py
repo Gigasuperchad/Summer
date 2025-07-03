@@ -87,11 +87,9 @@ class Coin:
         thickness = 4  # толщина буквы
         inner_radius = outer_radius - thickness
 
-        # Монета — жёлтый круг
         pygame.draw.circle(self.image, (255, 215, 0), center, outer_radius)
         pygame.draw.circle(self.image, (255, 255, 150), center, outer_radius - 6)
 
-        # Меньшая буква "C" — черная
         c_outer_radius = outer_radius - 10
         c_inner_radius = c_outer_radius - thickness
 

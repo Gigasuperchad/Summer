@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 import random
 import math
@@ -354,7 +356,7 @@ while running:
 
         keys = pygame.key.get_pressed()
         if door.is_open(coins_collected) and keys[pygame.K_e]:
-            current_level="file_8"
+            current_level="1"
 
     player_draw_rect = player.copy()
     player_draw_rect.x -= int(scroll_x)
@@ -364,8 +366,7 @@ while running:
     draw_coin_counter(screen)
     if current_level:
         sound.stop()
-        module = importlib.import_module(current_level)
-        module.main()
+        sys.exit()
 
     if player.y > 900:
         death()
