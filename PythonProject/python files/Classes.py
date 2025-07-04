@@ -265,18 +265,18 @@ class Cube:
             end = projected[edge[1]]
             pygame.draw.line(screen, (200, 230, 255), start[:2], end[:2], 1)
 
+
 class GridBackground:
-    def __init__(self, screen_width=800, screen_height=600):
+    def __init__(self, screen_width=1000, screen_height=1000):
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.grid_size = 60 
         self.original_size = 60
         self.rotation = 0
-        self.original_rotation = 0
-        self.color = (80, 120, 200)  
-        self.original_color = (80, 120, 200)
+        self.color_phase = 0  
         self.animation_phase = 0 
-        self.animation_speed = 0.01
+        self.animation_speed = 0.005  
+        self.color_speed = 0.01 
         self.last_time = time.time()
     
     def update(self):
@@ -288,46 +288,181 @@ class GridBackground:
         
         if self.animation_phase >= 2.0:
             self.animation_phase = 0.0
-            self.grid_size = self.original_size
-            self.rotation = self.original_rotation
-            self.color = self.original_color
         
         if self.animation_phase < 1.0:
             progress = self.animation_phase
         else:
             progress = 2.0 - self.animation_phase
-
+        
         self.grid_size = self.original_size * (1.0 + 0.5 * math.sin(progress * math.pi))
+        
         self.rotation = 10 * math.sin(progress * math.pi * 2)
         
-
-        r = int(80 + 80 * math.sin(progress * math.pi))
-        g = int(120 - 40 * math.sin(progress * math.pi))
-        b = int(200 + 55 * math.sin(progress * math.pi * 0.5))
-        self.color = (r, g, b)
+        self.color_phase += self.color_speed * delta_time * 60
+        if self.color_phase > 1.0:
+            self.color_phase = 0.0
+        
+       
+        hue = self.color_phase * 360  
+        r, g, b = self.hsv_to_rgb(hue, 0.8, 0.9)  
+        self.color = (int(r * 255), int(g * 255), int(b * 255))
+    
+    def hsv_to_rgb(self, h, s, v):
+        c = v * s
+        x = c * (1 - abs((h / 60) % 2 - 1))
+        m = v - c
+        
+        if 0 <= h < 60:
+            r, g, b = c, x, 0
+        elif 60 <= h < 120:
+            r, g, b = x, c, 0
+        elif 120 <= h < 180:
+            r, g, b = 0, c, x
+        elif 180 <= h < 240:
+            r, g, b = 0, x, c
+        elif 240 <= h < 300:
+            r, g, b = x, 0, c
+        else:
+            r, g, b = c, 0, x
+        
+        return (r + m, g + m, b + m)
     
     def draw(self, screen, scroll_x, scroll_y):
         grid_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
         
+    
         offset_x = scroll_x % self.grid_size
         offset_y = scroll_y % self.grid_size
         
 
         grid_size_int = int(round(self.grid_size))
         
-  
+       
         for x in range(-grid_size_int, self.screen_width + grid_size_int, grid_size_int):
             line_x = x - offset_x
-            pygame.draw.line(grid_surf, self.color, (line_x, 0), (line_x, self.screen_height), 1)
+            pygame.draw.line(grid_surf, self.color, (line_x, 0), (line_x, self.screen_height), 2)
         
 
         for y in range(-grid_size_int, self.screen_height + grid_size_int, grid_size_int):
             line_y = y - offset_y
-            pygame.draw.line(grid_surf, self.color, (0, line_y), (self.screen_width, line_y), 1)
+            pygame.draw.line(grid_surf, self.color, (0, line_y), (self.screen_width, line_y), 2)
         
+
         if self.rotation != 0:
             rotated_surf = pygame.transform.rotate(grid_surf, self.rotation)
             rotated_rect = rotated_surf.get_rect(center=(self.screen_width//2, self.screen_height//2))
             screen.blit(rotated_surf, rotated_rect)
         else:
             screen.blit(grid_surf, (0, 0))
+class Sphere:
+    def __init__(self):
+        self.x = screen_w 
+        self.y = screen_h // 2
+        self.z = 0
+        self.radius = 200
+        self.latitude = 20
+        self.longitude = 24
+        self.vertices = []
+        self.edges = []
+        self.rotation_angle = 0
+        self.rotation_speed = 0.002
+        self.size = 800
+        self.generate_vertices()
+        self.generate_edges()
+    
+    def generate_vertices(self):
+        self.vertices = []
+        for i in range(self.latitude):
+            theta = math.pi * i / self.latitude
+            for j in range(self.longitude):
+                phi = 2 * math.pi * j / self.longitude
+                x = self.radius * math.sin(theta) * math.cos(phi)
+                y = self.radius * math.sin(theta) * math.sin(phi)
+                z = self.radius * math.cos(theta)
+                self.vertices.append([x, y, z])
+    
+    def generate_edges(self):
+        self.edges = []
+        for i in range(self.latitude):
+            for j in range(self.longitude):
+                idx = i * self.longitude + j
+                next_j = idx + 1 if j < self.longitude - 1 else idx - self.longitude + 1
+                self.edges.append((idx, next_j))
+                
+                if i < self.latitude - 1:
+                    next_i = (i + 1) * self.longitude + j
+                    self.edges.append((idx, next_i))
+    
+    @staticmethod
+    def rotate_x(point, angle):
+        x, y, z = point
+        cos_a, sin_a = math.cos(angle), math.sin(angle)
+        return [x, y * cos_a - z * sin_a, y * sin_a + z * cos_a]
+
+    @staticmethod
+    def rotate_y(point, angle):
+        x, y, z = point
+        cos_a, sin_a = math.cos(angle), math.sin(angle)
+        return [x * cos_a + z * sin_a, y, -x * sin_a + z * cos_a]
+    
+    def update(self):
+        self.rotation_angle += self.rotation_speed
+    
+    def project_point(self, vertex):
+        x, y, z = vertex
+        rotated = self.rotate_y(self.rotate_x(vertex, self.rotation_angle), self.rotation_angle * 0.5)
+        x, y, z = rotated
+        
+        factor = self.size / (self.size + z * 3)
+        x_proj = x * factor + self.x
+        y_proj = y * factor + self.y
+        
+        return (x_proj, y_proj, z)
+    
+    def draw(self, screen):
+        """Отрисовка сферы"""
+        projected = []
+        for vertex in self.vertices:
+            projected.append(self.project_point(vertex))
+        
+        draw_edges = []
+        for edge in self.edges:
+            start_idx, end_idx = edge
+            start = projected[start_idx]
+            end = projected[end_idx]
+            
+            avg_z = (start[2] + end[2]) / 2
+            draw_edges.append((avg_z, (start[0], start[1]), (end[0], end[1])))
+        
+        draw_edges.sort(key=lambda x: x[0], reverse=True)
+        
+        for edge in draw_edges:
+            pygame.draw.line(screen, (200, 0, 200), edge[1], edge[2])
+
+class MenuTriangle:
+    def __init__(self):
+   
+        min_x = min(screen_w, screen_h + 100)
+        max_x = max(screen_w, screen_h + 100)
+        self.x = random.randint(min_x, max_x)
+        
+        self.y = -5000  
+        self.height = 10000 
+        self.width = random.randint(50, 150)  
+        self.color = (random.randint(100,138), random.randint(20,50), random.randint(100,230)) 
+        self.speed_x = random.uniform(-10, -1)
+        self.thickness = random.randint(3,6)
+        self.points = [
+            (self.x, self.y),  
+            (self.x - self.width//2, self.y + self.height),  
+            (self.x + self.width//2, self.y + self.height)  
+        ]
+    
+    def update(self):
+        self.x += self.speed_x
+   
+        self.points = [
+            (self.x, self.y),
+            (self.x - self.width//2, self.y + self.height),
+            (self.x + self.width//2, self.y + self.height)
+        ]

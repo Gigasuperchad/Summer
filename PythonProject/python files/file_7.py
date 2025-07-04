@@ -4,7 +4,7 @@ import pygame
 import random
 import math
 import importlib
-from Classes import Block, Triangle, Door, Coin
+from Classes import Block, Triangle, Door, Coin, Sphere
 
 pygame.init()
 
@@ -17,19 +17,20 @@ pygame.display.set_icon(icon)
 pygame.mixer.init()
 pygame.mixer.music.stop()
 sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
-sound = pygame.mixer.Sound("../music/aphex-twin-vordhosbn.mp3")
+sound = pygame.mixer.Sound("../music/aphex-twin-xtal.mp3")
 sound.play().set_volume(0.3)
 
-# Генерация случайных данных для фона (оставил как у вас)
-a = [random.randint(-1000, 1000) for _ in range(2000)]
-a_1 = [random.randint(-500, 500) for _ in range(200)]
-a_2 = [random.randint(-500, 500) for _ in range(200)]
 
-b = [random.randint(11, 20) for _ in range(2000)]
-c = [random.randint(0, 400) for _ in range(2000)]
-d = [random.randint(20, 100) for _ in range(200)]
+a = [random.randint(-1000, 1000) for _ in range(5000)]
+c = [random.randint(0, 400) for _ in range(5000)]
+color_BG = [random.randint(0,255) for _ in range(5000)]
 
-color_BG = [random.randint(0,255) for _ in range(2000)]
+def background(scroll_x, scroll_y):
+    for i in range(5000):
+        pygame.draw.circle(screen, (color_BG[i],color_BG[i],color_BG[i]), (a[i]-scroll_x//100, c[i]*2), 1)
+    for p in range(0,900,3):    
+        pygame.draw.line(screen, (0,0,0), (p, 0), (p, 700), 1)
+        pygame.draw.line(screen, (0,0,0), (0, p ), (900, p), 1)
 
 jump_force = -17
 gravity = 0.9
@@ -45,22 +46,7 @@ player_speed = 5
 
 current_level = None
 
-def background():
-    for i in range(5):
-        points = [
-            (random.randint(-10,800), random.randint(0, 600)),  # Точка 1
-            (random.randint(-10,800), random.randint(0, 600)),  # Точка 2
-            (random.randint(-10,800), random.randint(0, 600))   # Точка 3
-        ]
-        color = (random.randint(0, 255),
-                random.randint(0, 255),
-                random.randint(0, 255))
-        pygame.draw.polygon(screen, color, points, 2)
-    for j in range(5):
-        pygame.draw.rect(screen, color, (random.randint(-10,800),random.randint(0, 600), random.randint(0, 300), random.randint(0, 300)))
-    for p in range(0,900,3):
-        pygame.draw.line(screen, (0,0,0), (p, 0), (p, 700), 1)
-        pygame.draw.line(screen, (0,0,0), (0, p ), (900, p), 1)
+sphere = Sphere()
 
 def ground3d(scroll_x):
     for i in range(0,30,3):
@@ -227,7 +213,7 @@ deadzone_right = screen_w // 2 + deadzone_width // 2
 # Скорость сглаживания камеры (чем меньше — тем плавнее)
 camera_smooth_speed = 0.1
 
-door = Door(17830, 300, width=60, height=100, coins_required=18)
+door = Door(17900, 300, width=60, height=100, coins_required=18)
 
 # Счетчик собранных монет
 coins_collected = 0
@@ -287,6 +273,7 @@ running = True
 reset_game()
 
 while running:
+
     dt = clock.tick(60) / 1000
 
     for event in pygame.event.get():
@@ -332,9 +319,9 @@ while running:
     scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
 
     screen.fill((0,0,0))
-
-    background()
-
+    background(scroll_x, scroll_y)
+    sphere.update()
+    sphere.draw(screen)
     for block in blocks:
         block.draw(screen, int(scroll_x), int(scroll_y))
 
