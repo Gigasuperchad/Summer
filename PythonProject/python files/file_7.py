@@ -4,7 +4,7 @@ import pygame
 import random
 import math
 import importlib
-from Classes import Block, Triangle, Door, Coin, Sphere
+from Classes import Block, Triangle, Door, Coin, Sphere, MenuTriangle
 
 pygame.init()
 
@@ -204,21 +204,78 @@ on_ground = False
 scroll_x = 0
 scroll_y = 0
 
-# Параметры "невидимой рамки" (deadzone)
 deadzone_width = 20
 
 deadzone_left = screen_w // 2 - deadzone_width // 2
 deadzone_right = screen_w // 2 + deadzone_width // 2
 
-# Скорость сглаживания камеры (чем меньше — тем плавнее)
 camera_smooth_speed = 0.1
 
 door = Door(17900, 300, width=60, height=100, coins_required=18)
 
-# Счетчик собранных монет
 coins_collected = 0
 font_coin = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
 
+animation_active = False
+animation_alpha = 10
+max_alpha = 255
+animation_speed = 3
+menu_triangles = []
+
+def win():
+    global running, vertical_momentum, on_ground, blocks, triangles, animation_active, animation_alpha
+    sound.stop()
+    
+    animation_active = True
+    animation_alpha = 10
+    menu_triangles = [MenuTriangle() for _ in range(10)]
+    
+    while animation_alpha < max_alpha:
+        
+        overlay = pygame.Surface((screen_w, screen_h), pygame.SRCALPHA)
+        overlay.fill((255, 255, 255, animation_alpha))
+        screen.blit(overlay, (0, 0))
+        
+        for menu_triangle in menu_triangles[:]:  
+            menu_triangle.update()
+            animation_alpha += 0.2
+        
+        pygame.display.flip()
+        pygame.time.delay(15)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+    
+    win_screen = pygame.Surface((800, 600))
+    win_screen.fill((255,255,255))
+    
+    font = pygame.font.Font("RuneScape-ENA.ttf", 100)
+    text_surface = font.render("Level Complete!", True, (0,0,0))
+    text_rect = text_surface.get_rect(center=(400, 300)) 
+    
+    font_small = pygame.font.Font("RuneScape-ENA.ttf", 40)
+    hint_surface = font_small.render("Press ESC to exit", True, (0,0,0))
+    hint_rect = hint_surface.get_rect(center=(400, 400))
+    
+    win_screen.blit(text_surface, text_rect)
+    win_screen.blit(hint_surface, hint_rect)
+    
+    won = True
+    while won:
+        screen.blit(win_screen, (0,0))
+        
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    exit()
 def draw_coin_counter(screen):
     text = font_coin.render(f"Coins: {coins_collected}", True, (255, 170, 0))
     screen.blit(text, (10, 10))
@@ -350,7 +407,8 @@ while running:
 
         keys = pygame.key.get_pressed()
         if door.is_open(coins_collected) and keys[pygame.K_e]:
-            current_level="1"
+            win()
+            # current_level="1"
 
     player_draw_rect = player.copy()
     player_draw_rect.x -= int(scroll_x)
