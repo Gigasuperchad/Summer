@@ -7,10 +7,13 @@ from Classes import MenuTriangle
 clock = pygame.time.Clock()
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
+pygame.init()
 with open("../titles/title.txt", "r") as file:
     title = file.read()
-pygame.init()
+pygame.display.set_caption(f'{title}')
+icon = pygame.image.load("../pictures/КАРТИНОЧКА.png")
+pygame.display.set_icon(icon)
+
 pygame.mixer.init()
 sound1 = pygame.mixer.Sound("../music/Home_-_Resonance_75115125.mp3")
 sound1.play(-1).set_volume(0.3)
@@ -386,6 +389,7 @@ while running:
             # Обновление таймера загрузки
             if loading_level:
                 loading_timer += 1
+                sound1.stop()
                 loading_progress = min(loading_timer, loading_max)
                 
                 # Когда загрузка завершена
@@ -397,7 +401,6 @@ while running:
             # Обработка загрузки уровня
             if current_level:
                 try:
-                    sound1.stop()
                     module = importlib.import_module(current_level)
                     module.main()
                     
