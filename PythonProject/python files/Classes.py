@@ -72,49 +72,95 @@ class Door:
     def collide(self, player_rect):
         return self.rect.colliderect(player_rect)
 
+
 class Coin:
-    def __init__(self, x, y, size=40):
+    def __init__(self, x, y, size=40, gravity=False):
         self.x = x
         self.y = y
         self.base_y = y
         self.size = size
         self.collected = False
+        self.gravity = gravity  # True - меняет гравитацию, False - обычная монета
 
         self.image = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
-
         center = (self.size // 2, self.size // 2)
         outer_radius = self.size // 2 - 4
-        thickness = 4  # толщина буквы
-        inner_radius = outer_radius - thickness
 
-        pygame.draw.circle(self.image, (255, 215, 0), center, outer_radius)
-        pygame.draw.circle(self.image, (255, 255, 150), center, outer_radius - 6)
+        # Разные цвета для разных типов монет
 
-        c_outer_radius = outer_radius - 10
-        c_inner_radius = c_outer_radius - thickness
+        if self.gravity:
+            # Фиолетовая монета (гравитация)
+            pygame.draw.circle(self.image, (148, 0, 211), center, outer_radius)
+            pygame.draw.circle(self.image, (200, 160, 255), center, outer_radius - 6)
 
-        start_angle = math.radians(45)
-        end_angle = math.radians(315)
+            # Параметры стрелок
+            line_length = outer_radius // 2  # Длина вертикальной линии
+            arrow_width = outer_radius // 4  # Ширина треугольного наконечника
+            arrow_height = outer_radius // 5  # Высота треугольного наконечника
+            spacing = outer_radius // 4  # Расстояние между стрелками
 
-        points = []
-        steps = 30
+            # Левая стрелка (↑) - линия + треугольник вверх
+            left_line_x = center[0] - spacing
+            # Вертикальная линия
+            pygame.draw.line(
+                self.image, (0, 0, 0),
+                (left_line_x, center[1] - line_length // 2),
+                (left_line_x, center[1] + line_length // 2),
+                3  # Толщина линии
+            )
+            # Треугольник (↑)
+            pygame.draw.polygon(self.image, (0, 0, 0), [
+                (left_line_x, center[1] - line_length // 2),  # Верх линии
+                (left_line_x - arrow_width, center[1] - line_length // 2 + arrow_height),  # Левый угол
+                (left_line_x + arrow_width, center[1] - line_length // 2 + arrow_height)  # Правый угол
+            ])
 
-        for i in range(steps + 1):
-            angle = start_angle + (end_angle - start_angle) * i / steps
-            x = center[0] + c_outer_radius * math.cos(angle)
-            y = center[1] + c_outer_radius * math.sin(angle)
-            points.append((x, y))
+            # Правая стрелка (↓) - линия + треугольник вниз
+            right_line_x = center[0] + spacing
+            # Вертикальная линия
+            pygame.draw.line(
+                self.image, (0, 0, 0),
+                (right_line_x, center[1] - line_length // 2),
+                (right_line_x, center[1] + line_length // 2),
+                3
+            )
+            # Треугольник (↓)
+            pygame.draw.polygon(self.image, (0, 0, 0), [
+                (right_line_x, center[1] + line_length // 2),  # Низ линии
+                (right_line_x - arrow_width, center[1] + line_length // 2 - arrow_height),  # Левый угол
+                (right_line_x + arrow_width, center[1] + line_length // 2 - arrow_height)  # Правый угол
+            ])
 
-        for i in range(steps, -1, -1):
-            angle = start_angle + (end_angle - start_angle) * i / steps
-            x = center[0] + c_inner_radius * math.cos(angle)
-            y = center[1] + c_inner_radius * math.sin(angle)
-            points.append((x, y))
+        else:
+            # Золотая монета (обычная)
+            pygame.draw.circle(self.image, (255, 215, 0), center, outer_radius)  # Золотой
+            pygame.draw.circle(self.image, (255, 255, 150), center, outer_radius - 6)  # Светло-золотой
 
-        pygame.draw.polygon(self.image, (0, 0, 0), points)
+            # Рисуем букву "C" (как раньше для обычных монет)
+            c_outer_radius = outer_radius - 10
+            thickness = 4
+            start_angle = math.radians(45)
+            end_angle = math.radians(315)
+
+            points = []
+            steps = 30
+            for i in range(steps + 1):
+                angle = start_angle + (end_angle - start_angle) * i / steps
+                x = center[0] + c_outer_radius * math.cos(angle)
+                y = center[1] + c_outer_radius * math.sin(angle)
+                points.append((x, y))
+
+            for i in range(steps, -1, -1):
+                angle = start_angle + (end_angle - start_angle) * i / steps
+                x = center[0] + (c_outer_radius - thickness) * math.cos(angle)
+                y = center[1] + (c_outer_radius - thickness) * math.sin(angle)
+                points.append(((x, y)))
+
+            pygame.draw.polygon(self.image, (0, 0, 0), points)
 
         self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
 
+        # Анимация плавания
         self.float_offset = 0
         self.float_speed = 0.05
         self.float_amplitude = 5
@@ -124,7 +170,6 @@ class Coin:
         self.float_angle += self.float_speed
         if self.float_angle > 2 * math.pi:
             self.float_angle -= 2 * math.pi
-
         self.float_offset = math.sin(self.float_angle) * self.float_amplitude
         self.rect.y = int(self.base_y + self.float_offset)
 
@@ -135,3 +180,5 @@ class Coin:
 
     def collide(self, player_rect):
         return self.rect.colliderect(player_rect)
+
+
