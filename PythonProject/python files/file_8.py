@@ -15,10 +15,9 @@ pygame.display.set_icon(icon)
 pygame.mixer.init()
 pygame.mixer.music.stop()
 sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
-sound = pygame.mixer.Sound("../music/M.O.O.N. - Hydrogen.mp3")
+sound = pygame.mixer.Sound("../music/aphex-twin-vordhosbn.mp3")
 sound.play().set_volume(0.3)
 
-# Генерация случайных данных для фона (оставил как у вас)
 a = [random.randint(-1000, 1000) for _ in range(2000)]
 a_1 = [random.randint(-500, 500) for _ in range(200)]
 a_2 = [random.randint(-500, 500) for _ in range(200)]
@@ -42,8 +41,6 @@ def getZnak(num):
 player_speed = 5
 
 current_level = None
-
-
 
 
 def background(scroll_x, scroll_y):

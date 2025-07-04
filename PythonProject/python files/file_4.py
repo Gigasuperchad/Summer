@@ -14,7 +14,7 @@ pygame.display.set_icon(icon)
 pygame.mixer.init()
 pygame.mixer.music.stop()
 sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
-sound = pygame.mixer.Sound("../music/M.O.O.N. - Hydrogen.mp3")
+sound = pygame.mixer.Sound("../music/Aphex_Twin_-_Pulsewidth_48056935.mp3")
 sound.play().set_volume(0.3)
 
 jump_force = -17

@@ -17,7 +17,7 @@ pygame.display.set_icon(icon)
 pygame.mixer.init()
 pygame.mixer.music.stop()
 sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
-sound = pygame.mixer.Sound("../music/M.O.O.N. - Crystals.mp3")
+sound = pygame.mixer.Sound("../music/aphex-twin-vordhosbn.mp3")
 sound.play().set_volume(0.3)
 
 # Генерация случайных данных для фона (оставил как у вас)

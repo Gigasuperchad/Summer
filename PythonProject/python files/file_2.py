@@ -2,7 +2,7 @@ import pygame
 import random
 import math
 import importlib
-from Classes import Block, Triangle, Door, Coin
+from Classes import Block, Triangle, Door, Coin, Cube
 
 pygame.init()
 
@@ -15,18 +15,38 @@ pygame.display.set_icon(icon)
 pygame.mixer.init()
 pygame.mixer.music.stop()
 sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
-sound = pygame.mixer.Sound("../music/M.O.O.N. - Hydrogen.mp3")
+sound = pygame.mixer.Sound("../music/aphex-twin-xtal.mp3")
 sound.play().set_volume(0.3)
 
-a = [random.randint(-1000, 1000) for _ in range(2000)]
+a = [random.randint(-1000, 1000) for _ in range(5000)]
 a_1 = [random.randint(-500, 500) for _ in range(200)]
 a_2 = [random.randint(-500, 500) for _ in range(200)]
 
 b = [random.randint(11, 20) for _ in range(2000)]
-c = [random.randint(0, 400) for _ in range(2000)]
+c = [random.randint(0, 400) for _ in range(5000)]
 d = [random.randint(20, 100) for _ in range(200)]
+color_BG = [random.randint(0,255) for _ in range(5000)]
 
-color_BG = [random.randint(0,255) for _ in range(2000)]
+def background(scroll_x, scroll_y):
+    for i in range(5000):
+        pygame.draw.circle(screen, (color_BG[i],color_BG[i],color_BG[i]), (a[i]-scroll_x//100, c[i]*2), 1)
+    for p in range(0,900,3):    
+        pygame.draw.line(screen, (0,0,0), (p, 0), (p, 700), 1)
+        pygame.draw.line(screen, (0,0,0), (0, p ), (900, p), 1)
+
+    for i in range(30):
+        points1 = [(a[i] - scroll_x // b[i], 600 - c[i] - scroll_y // b[i]),
+                   (a_1[i] - scroll_x // b[i], 800),
+                   (a_2[i] - scroll_x // b[i], 800)]
+        points2 = [(500 - a[i] - scroll_x // b[i], 600 - c[i] - scroll_y // b[i]),
+                   (500 - a_1[i] - scroll_x // b[i], 800),
+                   (500 - a_2[i] - scroll_x // b[i], 800)]
+        points3 = [(1000 + a[i] - scroll_x // b[i], 600 - c[i] - scroll_y // b[i]),
+                   (1000 + a_1[i] - scroll_x // b[i], 800),
+                   (1000 + a_2[i] - scroll_x // b[i], 800)]
+        pygame.draw.polygon(screen, (color_BG[i], 0, color_BG[i]), points1, 1)
+        pygame.draw.polygon(screen, (color_BG[i], 0, color_BG[i]), points2, 1)
+        pygame.draw.polygon(screen, (color_BG[i], 0, color_BG[i]), points3, 1)
 
 jump_force = -17
 gravity = 0.9
@@ -187,10 +207,20 @@ def collisions(dx):
 clock = pygame.time.Clock()
 running = True
 
+cubes = []
+for _ in range(30):
+    cubes.append(Cube(
+        random.randint(-200, screen_w+200),
+        random.randint(0, 500)
+    ))
+
 reset_game()
 
 while running:
     dt = clock.tick(60) / 1000
+
+    for cube in cubes:
+        cube.update()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -208,6 +238,9 @@ while running:
         vertical_momentum = jump_force
         on_ground = False
 
+    for cube in cubes:
+            cube.velocity_x = -dx // 5
+
     collisions(dx)
 
     for coin in coins:
@@ -215,7 +248,7 @@ while running:
         if not coin.collected and coin.collide(player):
             coin.collected = True
             coins_collected += 1
-
+    
     player_screen_x = player.x - scroll_x
     player_screen_y = player.y - scroll_y
 
@@ -230,12 +263,14 @@ while running:
     scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
     scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
 
-    screen.fill((255,255,205))
-
-
+    screen.fill((0,0,0))
+   
     for block in blocks:
         block.draw(screen, int(scroll_x), int(scroll_y))
 
+    background(int(scroll_x), int(scroll_y))
+    for cube in cubes:
+                cube.draw(screen)
     ground3d(int(scroll_x))
 
     for triangle in triangles:
