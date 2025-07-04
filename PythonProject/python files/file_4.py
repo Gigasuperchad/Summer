@@ -1,7 +1,7 @@
 import pygame
 import random
 import importlib
-from Classes import Block, Triangle, Door, Coin
+from Classes import Block, Triangle, Door, Coin, GridBackground
 
 pygame.init()
 
@@ -14,7 +14,7 @@ pygame.display.set_icon(icon)
 pygame.mixer.init()
 pygame.mixer.music.stop()
 sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
-sound = pygame.mixer.Sound("../music/Aphex_Twin_-_Pulsewidth_48056935.mp3")
+sound = pygame.mixer.Sound("../music/M.O.O.N. - Hydrogen.mp3")
 sound.play().set_volume(0.3)
 
 jump_force = -17
@@ -28,8 +28,10 @@ def getZnak(num):
     return 0
 
 player_speed = 5
-
 current_level = None
+
+
+
 
 def ground3d(scroll_x):
     for i in range(0,30,3):
@@ -125,7 +127,7 @@ on_ground = False
 
 scroll_x = 0
 scroll_y = 0
-
+grid_bg = GridBackground(screen_h,screen_w)
 deadzone_width = 20
 
 deadzone_left = screen_w // 2 - deadzone_width // 2
@@ -191,6 +193,20 @@ running = True
 
 reset_game()
 
+grid_bg = GridBackground(screen_w, screen_h)
+def background(screen, scroll_x, scroll_y):
+    grid_bg.update()
+    grid_bg.draw(screen, scroll_x, scroll_y)
+
+a = [random.randint(-1000, 1000) for _ in range(5000)]
+c = [random.randint(0, 400) for _ in range(5000)]
+d = [random.randint(20, 100) for _ in range(5000)]
+
+color_BG = [random.randint(0,255) for _ in range(2000)]
+def background(scroll_x, scroll_y):
+    for i in range(5000):
+        pygame.draw.circle(screen, (100,100,155+d[i]), (a[i]-scroll_x//d[i], c[i]*2), 1)
+
 while running:
     dt = clock.tick(60) / 1000
 
@@ -209,7 +225,7 @@ while running:
     if keys[pygame.K_SPACE] and on_ground:
         vertical_momentum = jump_force
         on_ground = False
-
+    
     collisions(dx)
 
     for coin in coins:
@@ -231,9 +247,12 @@ while running:
 
     scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
     scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
-
-    screen.fill((30,0,50))
-
+    
+    grid_bg.update()
+    
+    screen.fill((0,0,0))
+    background(scroll_x, scroll_y)
+    grid_bg.draw(screen, scroll_x, scroll_y)
 
     for block in blocks:
         block.draw(screen, int(scroll_x), int(scroll_y))

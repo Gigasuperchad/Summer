@@ -92,9 +92,9 @@ current_level = None
 menu = 1
 running = True
 while running:
-    while menu==1:
+    while menu == 1:
         z += 0.5
-        x = 2
+        x += 2
         screen.fill((0, 0, 0))
 
         for event in pygame.event.get():

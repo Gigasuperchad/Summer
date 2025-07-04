@@ -216,7 +216,6 @@ clock = pygame.time.Clock()
 running = True
 
 reset_game()
-
 while running:
     
     dt = clock.tick(60) / 1000

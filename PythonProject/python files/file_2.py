@@ -15,7 +15,7 @@ pygame.display.set_icon(icon)
 pygame.mixer.init()
 pygame.mixer.music.stop()
 sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
-sound = pygame.mixer.Sound("../music/aphex-twin-xtal.mp3")
+sound = pygame.mixer.Sound("../music/Aphex_Twin_-_Pulsewidth_48056935.mp3")
 sound.play().set_volume(0.3)
 
 a = [random.randint(-1000, 1000) for _ in range(5000)]
@@ -270,7 +270,7 @@ while running:
 
     background(int(scroll_x), int(scroll_y))
     for cube in cubes:
-                cube.draw(screen)
+        cube.draw(screen)
     ground3d(int(scroll_x))
 
     for triangle in triangles:

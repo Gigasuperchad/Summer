@@ -1,6 +1,7 @@
 import pygame
 import math
 import random 
+import time
 screen_w, screen_h = 800, 600
 
 class Block:
@@ -28,7 +29,7 @@ class Triangle:
     def update(self):
         self.x = self.parent_block.rect.x + self.offset_x
         self.y = self.parent_block.rect.y + self.offset_y
-        self.hitbox.center = (self.x, self.y)
+        # self.hitbox.center = (self.x, self.y)
 
     def draw(self, screen, scroll_x, scroll_y):
         points = [
@@ -46,8 +47,9 @@ class Door:
         self.height = height
         self.coins_required = coins_required
         self.rect = pygame.Rect(self.x, self.y - self.height, self.width, self.height)
-
-        self.color = (0, 0,0)  # цвет двери
+        self.color = (0, 0, 0) 
+        self.outline_color = (255, 255, 255)  
+        self.outline_thickness = 2  
 
     def is_open(self, coins_collected):
         return coins_collected >= self.coins_required
@@ -55,15 +57,36 @@ class Door:
     def draw(self, screen, coins_collected, scroll_x=0, scroll_y=0):
         draw_x = self.x - scroll_x
         draw_y = self.y - scroll_y
+        radius = self.width // 2
+        
+        outline_rect = pygame.Rect(
+            draw_x - self.outline_thickness,
+            draw_y - self.height - self.outline_thickness,
+            self.width + self.outline_thickness * 2,
+            self.height + self.outline_thickness
+        )
+        pygame.draw.rect(screen, self.outline_color, outline_rect)
+        
+        outline_center = (draw_x + self.width // 2, draw_y - self.height - self.outline_thickness)
+        pygame.draw.circle(screen, self.outline_color, outline_center, radius + self.outline_thickness)
+        
+        outline_cut_rect = pygame.Rect(
+            draw_x - self.outline_thickness,
+            draw_y - self.height - self.outline_thickness,
+            self.width + self.outline_thickness * 2,
+            radius + self.outline_thickness
+        )
 
+        pygame.draw.rect(screen, self.outline_color, outline_cut_rect)
+
+      
         door_rect = pygame.Rect(draw_x, draw_y - self.height, self.width, self.height)
         pygame.draw.rect(screen, self.color, door_rect)
-
+        
+       
         center = (draw_x + self.width // 2, draw_y - self.height)
-        radius = self.width // 2
-
         pygame.draw.circle(screen, self.color, center, radius)
-
+       
         cut_rect = pygame.Rect(draw_x, draw_y - self.height, self.width, radius)
         pygame.draw.rect(screen, self.color, cut_rect)
 
@@ -241,3 +264,70 @@ class Cube:
             start = projected[edge[0]]
             end = projected[edge[1]]
             pygame.draw.line(screen, (200, 230, 255), start[:2], end[:2], 1)
+
+class GridBackground:
+    def __init__(self, screen_width=800, screen_height=600):
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.grid_size = 60 
+        self.original_size = 60
+        self.rotation = 0
+        self.original_rotation = 0
+        self.color = (80, 120, 200)  
+        self.original_color = (80, 120, 200)
+        self.animation_phase = 0 
+        self.animation_speed = 0.01
+        self.last_time = time.time()
+    
+    def update(self):
+        current_time = time.time()
+        delta_time = current_time - self.last_time
+        self.last_time = current_time
+        
+        self.animation_phase += self.animation_speed * delta_time * 60
+        
+        if self.animation_phase >= 2.0:
+            self.animation_phase = 0.0
+            self.grid_size = self.original_size
+            self.rotation = self.original_rotation
+            self.color = self.original_color
+        
+        if self.animation_phase < 1.0:
+            progress = self.animation_phase
+        else:
+            progress = 2.0 - self.animation_phase
+
+        self.grid_size = self.original_size * (1.0 + 0.5 * math.sin(progress * math.pi))
+        self.rotation = 10 * math.sin(progress * math.pi * 2)
+        
+
+        r = int(80 + 80 * math.sin(progress * math.pi))
+        g = int(120 - 40 * math.sin(progress * math.pi))
+        b = int(200 + 55 * math.sin(progress * math.pi * 0.5))
+        self.color = (r, g, b)
+    
+    def draw(self, screen, scroll_x, scroll_y):
+        grid_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+        
+        offset_x = scroll_x % self.grid_size
+        offset_y = scroll_y % self.grid_size
+        
+
+        grid_size_int = int(round(self.grid_size))
+        
+  
+        for x in range(-grid_size_int, self.screen_width + grid_size_int, grid_size_int):
+            line_x = x - offset_x
+            pygame.draw.line(grid_surf, self.color, (line_x, 0), (line_x, self.screen_height), 1)
+        
+
+        for y in range(-grid_size_int, self.screen_height + grid_size_int, grid_size_int):
+            line_y = y - offset_y
+            pygame.draw.line(grid_surf, self.color, (0, line_y), (self.screen_width, line_y), 1)
+        
+        if self.rotation != 0:
+            rotated_surf = pygame.transform.rotate(grid_surf, self.rotation)
+            rotated_rect = rotated_surf.get_rect(center=(self.screen_width//2, self.screen_height//2))
+            screen.blit(rotated_surf, rotated_rect)
+        else:
+            screen.blit(grid_surf, (0, 0))
