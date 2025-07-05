@@ -2,7 +2,7 @@ import pygame
 import random
 import math
 import importlib
-from Classes import Block, Triangle, Door, Coin
+from Classes import Block, Triangle, Door, Coin, PauseMenu
 
 pygame.init()
 
@@ -214,6 +214,10 @@ def collisions(dx):
 
 clock = pygame.time.Clock()
 running = True
+paused = False
+current_volume = 1.0  
+
+pause_menu = PauseMenu(screen, current_volume)
 
 reset_game()
 while running:
@@ -224,40 +228,60 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                paused = not paused
+            
+                if paused:
+                    pygame.mixer.pause()
+                else:
+                    pygame.mixer.unpause()
+        
+        if paused:
+            result = pause_menu.handle_event(event)
+            
+            if result == "volume_changed":
+                sound.set_volume(pause_menu.volume * 0.3)
+                sound_death.set_volume(pause_menu.volume * 0.3)
+            
+            elif result == "resume":
+                paused = False
+                pygame.mixer.unpause()
 
-    keys = pygame.key.get_pressed()
+    if not paused:
+        keys = pygame.key.get_pressed()
 
-    dx = 0
-    if keys[pygame.K_a]:
-        dx = -player_speed
-    if keys[pygame.K_d]:
-        dx = player_speed
+        dx = 0
+        if keys[pygame.K_a]:
+            dx = -player_speed
+        if keys[pygame.K_d]:
+            dx = player_speed
 
-    if keys[pygame.K_SPACE] and on_ground:
-        vertical_momentum = jump_force * getZnak(gravity)
-        on_ground = False
+        if keys[pygame.K_SPACE] and on_ground:
+            vertical_momentum = jump_force * getZnak(gravity)
+            on_ground = False
 
-    collisions(dx)
+        collisions(dx)
 
-    for coin in coins:
-        coin.update()
-        if not coin.collected and coin.collide(player):
-            coin.collected = True
-            coins_collected += 1
+        for coin in coins:
+            coin.update()
+            if not coin.collected and coin.collide(player):
+                coin.collected = True
+                coins_collected += 1
 
-    player_screen_x = player.x - scroll_x
-    player_screen_y = player.y - scroll_y
+        player_screen_x = player.x - scroll_x
+        player_screen_y = player.y - scroll_y
 
-    target_scroll_x = scroll_x
-    target_scroll_y = scroll_y
+        target_scroll_x = scroll_x
+        target_scroll_y = scroll_y
 
-    if player_screen_x < deadzone_left:
-        target_scroll_x -= (deadzone_left - player_screen_x)
-    elif player_screen_x > deadzone_right:
-        target_scroll_x += (player_screen_x - deadzone_right)
+        if player_screen_x < deadzone_left:
+            target_scroll_x -= (deadzone_left - player_screen_x)
+        elif player_screen_x > deadzone_right:
+            target_scroll_x += (player_screen_x - deadzone_right)
 
-    scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
-    scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
+        scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
+        scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
 
     screen.fill((0,0,0))
 
@@ -277,7 +301,7 @@ while running:
 
     door.draw(screen, coins_collected, scroll_x, scroll_y)
 
-    if door.collide(player):
+    if not paused and door.collide(player):
         font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 30)
         if door.is_open(coins_collected):
             msg = font.render("Дверь открыта! Нажмите E для перехода", True, (255, 0, 150))
@@ -296,13 +320,18 @@ while running:
     pygame.draw.rect(screen, player_color, player_draw_rect)
 
     draw_coin_counter(screen)
+    
     if current_level:
         sound.stop()
         module = importlib.import_module(current_level)
         module.main()
 
-    if player.y > 900:
+    if not paused and player.y > 900:
         death()
+
+
+    if paused:
+        pause_menu.draw()
 
     pygame.display.flip()
     current_level = None

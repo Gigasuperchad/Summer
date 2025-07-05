@@ -48,10 +48,10 @@ def backgoround():
     for i in range(200):
         pygame.draw.rect(screen, (color_BG[i],color_BG[i],color_BG[i]), (a[i]-z//b[i], c[i], d[i], d[i]))
     
-    # Исправленная часть: добавлена проверка для предотвращения ошибки
+  
     for i in range(30):
         y_base = 600 - c[i] - b[i]
-        if y_base < 0:  # Проверка, чтобы координата Y не была отрицательной
+        if y_base < 0: 
             y_base = 0
         
         pygame.draw.polygon(screen, (color_BG[i], 0, color_BG[i]), 
@@ -109,6 +109,7 @@ loading_level = None
 loading_timer = 0
 loading_progress = 0
 loading_max = 300
+
 def text2():
     global animation_active, animation_alpha, menu_triangles, loading_level
     font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 100)
@@ -414,8 +415,6 @@ while running:
                     loading_timer = 0
                     loading_progress = 0
                 except Exception as e:
-                    print(f"Ошибка загрузки уровня: {e}")
-                    # Сброс состояния при ошибке
                     current_level = None
                     click_blocked = False
                     animation_active = False

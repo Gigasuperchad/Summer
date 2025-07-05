@@ -466,3 +466,83 @@ class MenuTriangle:
             (self.x - self.width//2, self.y + self.height),
             (self.x + self.width//2, self.y + self.height)
         ]
+
+class PauseMenu:
+    def __init__(self, screen, current_volume):
+        self.screen = screen
+        self.volume = current_volume
+        self.width, self.height = screen_w, screen_h
+        
+
+        self.overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.overlay.fill((0, 0, 0, 180))  
+        
+        self.title_font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 70)
+        self.option_font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
+        
+        self.title_pos = (self.width // 2, 100)
+        self.volume_pos = (self.width // 2, 200)
+        self.slider_rect = pygame.Rect(self.width // 2 - 100, 250, 200, 20)
+        self.resume_button = pygame.Rect(self.width // 2 - 100, 350, 200, 60)
+        
+        self.slider_knob = pygame.Rect(0, 0, 15, 30)
+        self.update_slider_knob()
+        self.dragging = False
+    
+    def update_slider_knob(self):
+        knob_x = self.slider_rect.left + int(self.volume * self.slider_rect.width)
+        self.slider_knob.center = (knob_x, self.slider_rect.centery)
+    
+    def draw(self):
+        self.screen.blit(self.overlay, (0, 0))
+        
+        title = self.title_font.render("P a u s e E", True, (255,255,255))
+        title_rect = title.get_rect(center=self.title_pos)
+        self.screen.blit(title, title_rect)
+        
+        volume_text = self.option_font.render("Volume", True, (255,255,255))
+        volume_rect = volume_text.get_rect(center=self.volume_pos)
+        self.screen.blit(volume_text, volume_rect)
+        
+        pygame.draw.rect(self.screen, (100, 100, 100), self.slider_rect)
+        pygame.draw.rect(self.screen, (70, 70, 200), 
+                        (self.slider_rect.left, self.slider_rect.top, 
+                         int(self.volume * self.slider_rect.width), 
+                         self.slider_rect.height))
+        
+        pygame.draw.rect(self.screen, (200, 200, 255), self.slider_knob)
+        pygame.draw.rect(self.screen, (150, 150, 200), self.slider_knob, 2)
+        
+        pygame.draw.rect(self.screen, (50, 180, 50), self.resume_button)
+        pygame.draw.rect(self.screen, (30, 150, 30), self.resume_button, 3)
+        
+        resume_text = self.option_font.render("RESUME", True, (0,0,0))
+        resume_rect = resume_text.get_rect(center=self.resume_button.center)
+        self.screen.blit(resume_text, resume_rect)
+    
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.slider_rect.collidepoint(event.pos):
+                self.volume = max(0.0, min(1.0, 
+                    (event.pos[0] - self.slider_rect.left) / self.slider_rect.width))
+                self.update_slider_knob()
+                return "volume_changed"
+            
+            if self.resume_button.collidepoint(event.pos):
+                return "resume"
+            
+            if self.slider_knob.collidepoint(event.pos):
+                self.dragging = True
+        
+        elif event.type == pygame.MOUSEMOTION:
+            if self.dragging:
+                self.volume = max(0.0, min(1.0, 
+                    (event.pos[0] - self.slider_rect.left) / self.slider_rect.width))
+                self.update_slider_knob()
+                return "volume_changed"
+        
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if self.dragging:
+                self.dragging = False
+        
+        return None
