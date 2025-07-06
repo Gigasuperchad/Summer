@@ -1,10 +1,9 @@
 import sys
-
 import pygame
 import random
 import math
 import importlib
-from Classes import Block, Triangle, Door, Coin, Sphere
+from Classes import Block, Triangle, Door, Coin, Sphere, MenuTriangle, PauseMenu
 
 pygame.init()
 
@@ -19,7 +18,6 @@ pygame.mixer.music.stop()
 sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
 sound = pygame.mixer.Sound("../music/aphex-twin-xtal.mp3")
 sound.play().set_volume(0.3)
-
 
 a = [random.randint(-1000, 1000) for _ in range(5000)]
 c = [random.randint(0, 400) for _ in range(5000)]
@@ -204,20 +202,78 @@ on_ground = False
 scroll_x = 0
 scroll_y = 0
 
-# Параметры "невидимой рамки" (deadzone)
 deadzone_width = 20
 
 deadzone_left = screen_w // 2 - deadzone_width // 2
 deadzone_right = screen_w // 2 + deadzone_width // 2
 
-# Скорость сглаживания камеры (чем меньше — тем плавнее)
 camera_smooth_speed = 0.1
 
 door = Door(17900, 300, width=60, height=100, coins_required=18)
 
-# Счетчик собранных монет
 coins_collected = 0
 font_coin = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
+
+animation_active = False
+animation_alpha = 10
+max_alpha = 255
+animation_speed = 3
+menu_triangles = []
+
+def win():
+    global running, vertical_momentum, on_ground, blocks, triangles, animation_active, animation_alpha
+    sound.stop()
+    
+    animation_active = True
+    animation_alpha = 10
+    menu_triangles = [MenuTriangle() for _ in range(10)]
+    
+    while animation_alpha < max_alpha:
+        
+        overlay = pygame.Surface((screen_w, screen_h), pygame.SRCALPHA)
+        overlay.fill((255, 255, 255, animation_alpha))
+        screen.blit(overlay, (0, 0))
+        
+        for menu_triangle in menu_triangles[:]:  
+            menu_triangle.update()
+            animation_alpha += 0.2
+        
+        pygame.display.flip()
+        pygame.time.delay(15)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+    
+    win_screen = pygame.Surface((800, 600))
+    win_screen.fill((255,255,255))
+    
+    font = pygame.font.Font("RuneScape-ENA.ttf", 100)
+    text_surface = font.render("Level Complete!", True, (0,0,0))
+    text_rect = text_surface.get_rect(center=(400, 300)) 
+    
+    font_small = pygame.font.Font("RuneScape-ENA.ttf", 40)
+    hint_surface = font_small.render("Press ESC to exit", True, (0,0,0))
+    hint_rect = hint_surface.get_rect(center=(400, 400))
+    
+    win_screen.blit(text_surface, text_rect)
+    win_screen.blit(hint_surface, hint_rect)
+    
+    won = True
+    while won:
+        screen.blit(win_screen, (0,0))
+        
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    exit()
 
 def draw_coin_counter(screen):
     text = font_coin.render(f"Coins: {coins_collected}", True, (255, 170, 0))
@@ -272,51 +328,70 @@ running = True
 
 reset_game()
 
-while running:
+paused = False
+current_volume = 1.0
+pause_menu = PauseMenu(screen, current_volume)
 
+while running:
     dt = clock.tick(60) / 1000
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                paused = not paused
+                if paused:
+                    pygame.mixer.pause()
+                else:
+                    pygame.mixer.unpause()
+        
+        if paused:
+            result = pause_menu.handle_event(event)
+            
+            if result == "volume_changed":
+                sound.set_volume(pause_menu.volume * 0.3)
+                sound_death.set_volume(pause_menu.volume * 0.3)
+            
+            elif result == "resume":
+                paused = False
+                pygame.mixer.unpause()
 
-    keys = pygame.key.get_pressed()
+    if not paused:
+        keys = pygame.key.get_pressed()
 
-    dx = 0
-    if keys[pygame.K_a]:
-        dx = -player_speed
-    if keys[pygame.K_d]:
-        dx = player_speed
+        dx = 0
+        if keys[pygame.K_a]:
+            dx = -player_speed
+        if keys[pygame.K_d]:
+            dx = player_speed
 
-    if keys[pygame.K_SPACE] and on_ground:
-        vertical_momentum = jump_force
-        on_ground = False
+        if keys[pygame.K_SPACE] and on_ground:
+            vertical_momentum = jump_force
+            on_ground = False
 
-    collisions(dx)
+        collisions(dx)
 
-    # Проверка столкновения с монетами
-    for coin in coins:
-        coin.update()
-        if not coin.collected and coin.collide(player):
-            coin.collected = True
-            coins_collected += 1
+        for coin in coins:
+            coin.update()
+            if not coin.collected and coin.collide(player):
+                coin.collected = True
+                coins_collected += 1
 
-    # Позиция игрока на экране с учётом сдвига камеры
-    player_screen_x = player.x - scroll_x
-    player_screen_y = player.y - scroll_y
+        player_screen_x = player.x - scroll_x
+        player_screen_y = player.y - scroll_y
 
-    target_scroll_x = scroll_x
-    target_scroll_y = scroll_y
+        target_scroll_x = scroll_x
+        target_scroll_y = scroll_y
 
-    # Горизонтальная камера с deadzone
-    if player_screen_x < deadzone_left:
-        target_scroll_x -= (deadzone_left - player_screen_x)
-    elif player_screen_x > deadzone_right:
-        target_scroll_x += (player_screen_x - deadzone_right)
+        if player_screen_x < deadzone_left:
+            target_scroll_x -= (deadzone_left - player_screen_x)
+        elif player_screen_x > deadzone_right:
+            target_scroll_x += (player_screen_x - deadzone_right)
 
-    # Плавно приближаемся к целевой позиции камеры
-    scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
-    scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
+        scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
+        scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
 
     screen.fill((0,0,0))
     background(scroll_x, scroll_y)
@@ -330,16 +405,13 @@ while running:
     for triangle in triangles:
         triangle.draw(screen, int(scroll_x), int(scroll_y))
 
-    # Рисуем монеты, которые не собраны
     for coin in coins:
         if not coin.collected:
             coin.draw(screen, int(scroll_x), int(scroll_y))
 
-    # Рисуем дверь
     door.draw(screen, coins_collected, scroll_x, scroll_y)
 
-    # Подсказка при соприкосновении с дверью
-    if door.collide(player):
+    if not paused and door.collide(player):
         font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 30)
         if door.is_open(coins_collected):
             msg = font.render("Дверь открыта! Нажмите E для перехода", True, (255, 0, 150))
@@ -350,7 +422,7 @@ while running:
 
         keys = pygame.key.get_pressed()
         if door.is_open(coins_collected) and keys[pygame.K_e]:
-            current_level="1"
+            win()
 
     player_draw_rect = player.copy()
     player_draw_rect.x -= int(scroll_x)
@@ -358,11 +430,15 @@ while running:
     pygame.draw.rect(screen, player_color, player_draw_rect)
 
     draw_coin_counter(screen)
+    
+    if paused:
+        pause_menu.draw()
+    
     if current_level:
         sound.stop()
         sys.exit()
 
-    if player.y > 900:
+    if not paused and player.y > 900:
         death()
 
     pygame.display.flip()
