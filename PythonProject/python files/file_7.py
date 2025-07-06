@@ -1,3 +1,4 @@
+import os
 import sys
 import pygame
 import random
@@ -5,6 +6,8 @@ import math
 import importlib
 from Classes import Block, Triangle, Door, Coin, Sphere, MenuTriangle, PauseMenu
 
+
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 pygame.init()
 
 screen_w, screen_h = 800, 600
@@ -161,22 +164,22 @@ def init_level():
     ]
 
     triangles = [
-        Triangle(blocks[0], offset_x=745, offset_y=-25, size=45),
-        Triangle(blocks[1], offset_x=145, offset_y=-25, size=45),
-        Triangle(blocks[2], offset_x=110, offset_y=-25, size=45),
-        Triangle(blocks[5], offset_x=200, offset_y=-25, size=45),
-        Triangle(blocks[3], offset_x=100, offset_y=-25, size=45),
-        Triangle(blocks[7], offset_x=200, offset_y=-25, size=45),
-        Triangle(blocks[10], offset_x=50, offset_y=-25, size=45),
-        Triangle(blocks[15], offset_x=200, offset_y=-25, size=45),
-        Triangle(blocks[20], offset_x=80, offset_y=-25, size=45),
-        Triangle(blocks[25], offset_x=150, offset_y=-25, size=45),
-        Triangle(blocks[28], offset_x=400, offset_y=-25, size=45),
-        Triangle(blocks[28], offset_x=800, offset_y=-25, size=45),
-        Triangle(blocks[31], offset_x=300, offset_y=-25, size=45),
-        Triangle(blocks[33], offset_x=200, offset_y=-25, size=45),
-        Triangle(blocks[34], offset_x=400, offset_y=-25, size=45),
-        Triangle(blocks[39], offset_x=100, offset_y=-25, size=45)
+        # Triangle(blocks[0], offset_x=745, offset_y=-25, size=45),
+        # Triangle(blocks[1], offset_x=145, offset_y=-25, size=45),
+        # Triangle(blocks[2], offset_x=110, offset_y=-25, size=45),
+        # Triangle(blocks[5], offset_x=200, offset_y=-25, size=45),
+        # Triangle(blocks[3], offset_x=100, offset_y=-25, size=45),
+        # Triangle(blocks[7], offset_x=200, offset_y=-25, size=45),
+        # Triangle(blocks[10], offset_x=50, offset_y=-25, size=45),
+        # Triangle(blocks[15], offset_x=200, offset_y=-25, size=45),
+        # Triangle(blocks[20], offset_x=80, offset_y=-25, size=45),
+        # Triangle(blocks[25], offset_x=150, offset_y=-25, size=45),
+        # Triangle(blocks[28], offset_x=400, offset_y=-25, size=45),
+        # Triangle(blocks[28], offset_x=800, offset_y=-25, size=45),
+        # Triangle(blocks[31], offset_x=300, offset_y=-25, size=45),
+        # Triangle(blocks[33], offset_x=200, offset_y=-25, size=45),
+        # Triangle(blocks[34], offset_x=400, offset_y=-25, size=45),
+        # Triangle(blocks[39], offset_x=100, offset_y=-25, size=45)
 ]
 def init_coins():
     global coins
@@ -217,7 +220,7 @@ deadzone_right = screen_w // 2 + deadzone_width // 2
 
 camera_smooth_speed = 0.1
 
-door = Door(17900, 300, width=60, height=100, coins_required=18)
+door = Door(900, 300, width=60, height=100, coins_required=1)
 
 coins_collected = 0
 font_coin = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
@@ -257,11 +260,11 @@ def win():
     win_screen = pygame.Surface((800, 600))
     win_screen.fill((255,255,255))
     
-    font = pygame.font.Font("RuneScape-ENA.ttf", 100)
-    text_surface = font.render("Level Complete!", True, (0,0,0))
+    font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 100)
+    text_surface = font.render("YOU WIN!", True, (0,0,0))
     text_rect = text_surface.get_rect(center=(400, 300)) 
     
-    font_small = pygame.font.Font("RuneScape-ENA.ttf", 40)
+    font_small = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
     hint_surface = font_small.render("Press ESC to exit", True, (0,0,0))
     hint_rect = hint_surface.get_rect(center=(400, 400))
     
