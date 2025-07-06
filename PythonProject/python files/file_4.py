@@ -18,7 +18,7 @@ sound_death = pygame.mixer.Sound("../music/d19c2f47f78098a.mp3")
 sound = pygame.mixer.Sound("../music/M.O.O.N. - Hydrogen.mp3")
 sound.play().set_volume(0.3)
 
-jump_force = -17
+jump_force = -15
 gravity = 0.9
 
 maxJumpCount = 2
@@ -38,9 +38,14 @@ def ground3d(scroll_x):
     for i in range(0, 30, 3):
         for block in blocks:
             rect = block.rect.copy()
-            rect.x -= scroll_x
+            rect.x -= scroll_x + i - 15
+            if (i > 15):
+                rect.x += i - 15
+                rect.width -= i - 15
             rect.y += i - 15
             rect.height += 15 - i
+            if (i < 15):
+                rect.height -= (15 - i)
             shade = max(0, 200 - i * 5)
             pygame.draw.rect(screen, (shade, shade, shade), rect)
 
@@ -90,10 +95,10 @@ def init_level():
     blocks = [
         Block(-100, 400, 1200, 200),
         Block(-250, -100, 400, 800),
+        Block(1100, -200, 30, 500),
         Block(1100, 400, 1300, 800),
         Block(1100, 300, 1100, 5),
         Block(2300, -100, 400, 800),
-        Block(1100, -200, 30, 500)
     ]
 
     triangles = [
@@ -263,13 +268,8 @@ while running:
             if not coin.collected and coin.collide(player):
                 coin.collected = True
                 coins_collected += 1
-
-        if keys[pygame.K_SPACE] and on_ground:
-            vertical_momentum = jump_force
-            on_ground = False
-            jumpCounter -= 1
-            f = False
-        elif keys[pygame.K_SPACE] and jumpCounter > 0 and f:
+                
+        if keys[pygame.K_SPACE] and jumpCounter > 0 and f:
             vertical_momentum = jump_force
             jumpCounter -= 1
             f = False

@@ -67,10 +67,15 @@ def ground3d(scroll_x):
     for i in range(0,30,3):
         for block in blocks:
             rect = block.rect.copy()
-            rect.x -= scroll_x
+            rect.x -= scroll_x + i - 15
+            if (i > 15):
+                rect.x += i - 15
+                rect.width -= i - 15
             rect.y += i - 15
             rect.height += 15 - i
-            shade = max(0, 200 - i*5)
+            if (i < 15):
+                rect.height -= (15 - i)
+            shade = max(0, 200 - i * 5)
             pygame.draw.rect(screen, (shade, shade, shade), rect)
 
 def death():
@@ -117,39 +122,42 @@ def init_level():
     global blocks, triangles
 
     blocks = [
-        Block(-100, 400, 1200, 200),
+        Block(0, 500, 1200, 200),
         Block(-250, -100, 400, 800),
         Block(1100, -100, 1300, 800),
-        Block(0, -100, 1200, 100),
 
+        Block(1000, 310, 200, 400),
     ]
 
     triangles = [
-        # Triangle(blocks[0], offset_x=745, offset_y=-25, size=45)
+        Triangle(blocks[0], offset_x=600, offset_y=-25, size=40)
     ]
 
 def init_coins():
     global coins
     coins = [
-        Coin(350, 200,gravity=True),
-        Coin(450, 220),
-        Coin(550, 240,gravity=True),
-        Coin(650, 220),
-        Coin(750, 200,gravity=True),
+        # Coin(350, 200,gravity=True),
+        Coin(1025, 220),
+        # Coin(550, 240,gravity=True),
+        # Coin(650, 220),
+        # Coin(750, 200,gravity=True),
     ]
 
 def init_tokens():
     global tokens
     tokens = [
-        Token(400, 200, color=(255, 0, 0)),   # Красный - скорость = 10, прыжок = -20
-        Token(300, 200),   # Зеленый - скорость = 5, прыжок = -15
-        Token(500, 200, color=(0,255,255)),   # Синий - скорость = 1, прыжок = -10
+        # Token(400, 200, color=(255, 0, 0)),   # Красный - скорость = 10, прыжок = -20
+        # Token(300, 200),   # Зеленый - скорость = 5, прыжок = -15
+        # Token(500, 200, color=(0,255,255)),   # Синий - скорость = 1, прыжок = -10
     ]
 
 player = pygame.Rect(screen_w//2 - 20 - 200, screen_h//2 - 20 , 60, 60)
 player_color = (255, 0, 0)
 vertical_momentum = 0
 on_ground = False
+
+maxJumpCount = 2
+jumpCounter = maxJumpCount
 
 scroll_x = 0
 scroll_y = 0
@@ -160,7 +168,7 @@ deadzone_left = screen_w // 2 - deadzone_width // 2
 deadzone_right = screen_w // 2 + deadzone_width // 2
 camera_smooth_speed = 0.1
 
-door = Door(900, 400, width=60, height=100, coins_required=2)
+door = Door(800, 500, width=60, height=100, coins_required=1)
 
 coins_collected = 0
 font_coin = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
@@ -170,7 +178,7 @@ def draw_coin_counter(screen):
     screen.blit(text, (10, 10))
 
 def reset_game():
-    global player, vertical_momentum, on_ground, scroll_x, scroll_y, coins_collected, player_speed, jump_force
+    global player, vertical_momentum, on_ground, scroll_x, scroll_y, coins_collected, player_speed, jump_force, gravity
     player.x = screen_w//2 - 20 - 200
     player.y = screen_h//2 - 20
     vertical_momentum = 0
@@ -178,6 +186,7 @@ def reset_game():
     scroll_x = 0
     scroll_y = 0
     coins_collected = 0
+    gravity = 0.9
     player_speed=5
     jump_force=-15
     init_level()
@@ -185,7 +194,7 @@ def reset_game():
     init_tokens()
 
 def collisions(dx):
-    global vertical_momentum, on_ground
+    global vertical_momentum, on_ground, jumpCounter
 
     player.x += dx
     for block in blocks:
@@ -208,6 +217,7 @@ def collisions(dx):
                 else:
                     player.top = block.rect.bottom
                 vertical_momentum = 0
+                jumpCounter = maxJumpCount
                 on_ground = True
             elif vertical_momentum * getZnak(gravity) < 0:
                 if getZnak(gravity) > 0:
@@ -226,6 +236,7 @@ clock = pygame.time.Clock()
 running = True
 paused = False
 current_volume = 1.0  
+f = True
 
 pause_menu = PauseMenu(screen, current_volume)
 
@@ -267,9 +278,14 @@ while running:
         if keys[pygame.K_d]:
             dx = player_speed
 
-        if keys[pygame.K_SPACE] and on_ground:
+        if keys[pygame.K_SPACE] and jumpCounter > 0 and f:
             vertical_momentum = jump_force * getZnak(gravity)
             on_ground = False
+            jumpCounter -= 1
+            f = False
+
+        if not keys[pygame.K_SPACE]:
+            f = True
 
         collisions(dx)
 
@@ -279,8 +295,8 @@ while running:
             coin.collected = True
             if coin.gravity:
                 gravity*= -1
-            # else:
-            coins_collected += 1
+            else:
+                coins_collected += 1
 
     for token in tokens:
         token.update()
@@ -288,14 +304,14 @@ while running:
             token.collected = True
             # Изменяем скорость игрока в зависимости от цвета жетона
             if token.color == (255, 0, 0):
-                player_speed = 10
-                jump_force = -20
+                player_speed = 5
+                gravity = 0.5 * getZnak(gravity)
             elif token.color == (0, 255, 0):
                 player_speed = 5
-                jump_force = -15
+                gravity = 0.9 * getZnak(gravity)
             elif token.color == (0, 255, 255):
-                player_speed = 1
-                jump_force=-10
+                player_speed = 5
+                gravity = 2 * getZnak(gravity)
 
     player_screen_x = player.x - scroll_x
     player_screen_y = player.y - scroll_y
