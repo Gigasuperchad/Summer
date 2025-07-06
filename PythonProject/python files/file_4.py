@@ -1,7 +1,7 @@
 import pygame
 import random
 import importlib
-from Classes import Block, Triangle, Door, Coin
+from Classes import Block, Triangle, Door, Coin, GridBackground, PauseMenu
 
 pygame.init()
 
@@ -31,7 +31,6 @@ def getZnak(num):
     return 0
 
 player_speed = 5
-
 current_level = None
 
 def ground3d(scroll_x):
@@ -94,12 +93,9 @@ def init_level():
         Block(1100, 300, 1100, 5),
         Block(2300, -100, 400, 800),
         Block(1100, -200, 30, 500)
-
-
     ]
 
     triangles = [
-
         Triangle(blocks[0], offset_x=870, offset_y=-5, size=15),
         Triangle(blocks[0], offset_x=770, offset_y=-5, size=15),
         Triangle(blocks[0], offset_x=670, offset_y=-5, size=15),
@@ -117,8 +113,6 @@ def init_coins():
         Coin(600, 340),
         Coin(700, 340),
         Coin(1150, 240)
-
-
     ]
 
 player = pygame.Rect(screen_w//2 - 20 - 200, screen_h//2 - 20 , 60, 60)
@@ -128,7 +122,7 @@ on_ground = False
 
 scroll_x = 0
 scroll_y = 0
-
+grid_bg = GridBackground(screen_h, screen_w)
 deadzone_width = 20
 
 deadzone_left = screen_w // 2 - deadzone_width // 2
@@ -193,6 +187,20 @@ running = True
 
 reset_game()
 
+grid_bg = GridBackground(screen_w, screen_h)
+
+a = [random.randint(-1000, 1000) for _ in range(5000)]
+c = [random.randint(0, 400) for _ in range(5000)]
+d = [random.randint(20, 100) for _ in range(5000)]
+
+color_BG = [random.randint(0,255) for _ in range(2000)]
+def background(scroll_x, scroll_y):
+    for i in range(5000):
+        pygame.draw.circle(screen, (100,100,155+d[i]), (a[i]-scroll_x//d[i], c[i]*2), 1)
+
+paused = False
+current_volume = 1.0  
+pause_menu = PauseMenu(screen, current_volume)
 f = True
 
 while running:
@@ -201,15 +209,43 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                paused = not paused
+                if paused:
+                    pygame.mixer.pause()
+                else:
+                    pygame.mixer.unpause()
+        if paused:
+            result = pause_menu.handle_event(event)
+            if result == "volume_changed":
+                sound.set_volume(pause_menu.volume * 0.3)
+                sound_death.set_volume(pause_menu.volume * 0.3)
+            
+            elif result == "resume":
+                paused = False
+                pygame.mixer.unpause()
 
-    keys = pygame.key.get_pressed()
+    if not paused:
+        keys = pygame.key.get_pressed()
+        dx = 0
+        if keys[pygame.K_a]:
+            dx = -player_speed
+        if keys[pygame.K_d]:
+            dx = player_speed
 
-    dx = 0
-    if keys[pygame.K_a]:
-        dx = -player_speed
-    if keys[pygame.K_d]:
-        dx = player_speed
+        if keys[pygame.K_SPACE] and on_ground:
+            vertical_momentum = jump_force
+            on_ground = False
+        
+        collisions(dx)
 
+        for coin in coins:
+            coin.update()
+            if not coin.collected and coin.collide(player):
+                coin.collected = True
+                coins_collected += 1
 
     if not keys[pygame.K_SPACE]:
         f = True
@@ -219,30 +255,25 @@ while running:
         jumpCounter -= 1
         f = False
 
-    collisions(dx)
+        player_screen_x = player.x - scroll_x
+        player_screen_y = player.y - scroll_y
 
-    for coin in coins:
-        coin.update()
-        if not coin.collected and coin.collide(player):
-            coin.collected = True
-            coins_collected += 1
+        target_scroll_x = scroll_x
+        target_scroll_y = scroll_y
 
-    player_screen_x = player.x - scroll_x
-    player_screen_y = player.y - scroll_y
+        if player_screen_x < deadzone_left:
+            target_scroll_x -= (deadzone_left - player_screen_x)
+        elif player_screen_x > deadzone_right:
+            target_scroll_x += (player_screen_x - deadzone_right)
 
-    target_scroll_x = scroll_x
-    target_scroll_y = scroll_y
-
-    if player_screen_x < deadzone_left:
-        target_scroll_x -= (deadzone_left - player_screen_x)
-    elif player_screen_x > deadzone_right:
-        target_scroll_x += (player_screen_x - deadzone_right)
-
-    scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
-    scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
-
-    screen.fill((30,0,50))
-
+        scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
+        scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
+        
+        grid_bg.update()
+    
+    screen.fill((0,0,0))
+    background(scroll_x, scroll_y)
+    grid_bg.draw(screen, scroll_x, scroll_y)
 
     for block in blocks:
         block.draw(screen, int(scroll_x), int(scroll_y))
@@ -258,7 +289,8 @@ while running:
 
     door.draw(screen, coins_collected, scroll_x, scroll_y)
 
-    if door.collide(player):
+    # Проверка двери только вне паузы
+    if not paused and door.collide(player):
         font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 30)
         if door.is_open(coins_collected):
             msg = font.render("Дверь открыта! Нажмите E для перехода", True, (255, 0, 150))
@@ -269,7 +301,7 @@ while running:
 
         keys = pygame.key.get_pressed()
         if door.is_open(coins_collected) and keys[pygame.K_e]:
-            current_level="file_5"
+            current_level = "file_5"
 
     player_draw_rect = player.copy()
     player_draw_rect.x -= int(scroll_x)
@@ -277,12 +309,18 @@ while running:
     pygame.draw.rect(screen, player_color, player_draw_rect)
 
     draw_coin_counter(screen)
+    
+    # Отрисовка меню паузы поверх всего
+    if paused:
+        pause_menu.draw()
+    
     if current_level:
         sound.stop()
         module = importlib.import_module(current_level)
         module.main()
 
-    if player.y > 900:
+    # Проверка смерти только вне паузы
+    if not paused and player.y > 900:
         death()
 
     pygame.display.flip()
