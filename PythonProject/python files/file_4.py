@@ -241,7 +241,6 @@ while running:
         if keys[pygame.K_d]:
             dx = player_speed
 
-        # Обновление камеры независимо от прыжка
         player_screen_x = player.x - scroll_x
         player_screen_y = player.y - scroll_y
 
@@ -265,7 +264,6 @@ while running:
                 coin.collected = True
                 coins_collected += 1
 
-        # Обработка прыжков
         if keys[pygame.K_SPACE] and on_ground:
             vertical_momentum = jump_force
             on_ground = False
@@ -279,7 +277,6 @@ while running:
         if not keys[pygame.K_SPACE]:
             f = True
 
-        # Проверка двери
         door_collision = door.collide(player)
         if door_collision:
             font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 30)
@@ -293,11 +290,10 @@ while running:
                     try:
                         module = importlib.import_module(current_level)
                         module.main()
-                        # После завершения уровня возвращаемся в меню
                         reset_game()
                         sound.play().set_volume(0.3)
                     except ImportError:
-                        print(f"Уровень {current_level} не найден!")
+        
                         current_level = None
             else:
                 coins_needed = door.coins_required - coins_collected
