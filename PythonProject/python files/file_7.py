@@ -30,8 +30,11 @@ def background(scroll_x, scroll_y):
         pygame.draw.line(screen, (0,0,0), (p, 0), (p, 700), 1)
         pygame.draw.line(screen, (0,0,0), (0, p ), (900, p), 1)
 
-jump_force = -17
+jump_force = -15
 gravity = 0.9
+
+maxJumpCount = 2
+jumpCounter = maxJumpCount
 
 def getZnak(num):
     if (num > 0):
@@ -50,10 +53,15 @@ def ground3d(scroll_x):
     for i in range(0,30,3):
         for block in blocks:
             rect = block.rect.copy()
-            rect.x -= scroll_x
+            rect.x -= scroll_x + i - 15
+            if (i > 15):
+                rect.x += i - 15
+                rect.width -= i - 15
             rect.y += i - 15
             rect.height += 15 - i
-            shade = max(0, 200 - i*5)
+            if (i < 15):
+                rect.height -= (15 - i)
+            shade = max(0, 200 - i * 5)
             pygame.draw.rect(screen, (shade, shade, shade), rect)
 
 def death():
@@ -292,7 +300,7 @@ def reset_game():
     init_coins()
 
 def collisions(dx):
-    global vertical_momentum, on_ground
+    global vertical_momentum, on_ground, jumpCounter
 
     player.x += dx
     for block in blocks:
@@ -312,6 +320,7 @@ def collisions(dx):
             if vertical_momentum > 0:
                 player.bottom = block.rect.top
                 vertical_momentum = 0
+                jumpCounter = maxJumpCount
                 on_ground = True
             elif vertical_momentum < 0:
                 player.top = block.rect.bottom
@@ -325,6 +334,7 @@ def collisions(dx):
 
 clock = pygame.time.Clock()
 running = True
+f = True
 
 reset_game()
 
@@ -367,9 +377,13 @@ while running:
         if keys[pygame.K_d]:
             dx = player_speed
 
-        if keys[pygame.K_SPACE] and on_ground:
+        if keys[pygame.K_SPACE] and jumpCounter > 0 and f:
             vertical_momentum = jump_force
-            on_ground = False
+            jumpCounter -= 1
+            f = False
+
+        if not keys[pygame.K_SPACE]:
+            f = True
 
         collisions(dx)
 

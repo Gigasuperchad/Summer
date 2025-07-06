@@ -27,6 +27,13 @@ c = [random.randint(0, 400) for _ in range(5000)]
 d = [random.randint(20, 100) for _ in range(200)]
 color_BG = [random.randint(0,255) for _ in range(5000)]
 
+def getZnak(num):
+    if (num > 0):
+        return 1
+    elif num < 0:
+        return -1
+    return 0
+
 def background(scroll_x, scroll_y):
     for i in range(5000):
         pygame.draw.circle(screen, (color_BG[i],color_BG[i],color_BG[i]), (a[i]-scroll_x//100, c[i]*2), 1)
@@ -48,8 +55,11 @@ def background(scroll_x, scroll_y):
         pygame.draw.polygon(screen, (color_BG[i], 0, color_BG[i]), points2, 1)
         pygame.draw.polygon(screen, (color_BG[i], 0, color_BG[i]), points3, 1)
 
-jump_force = -17
+jump_force = -15
 gravity = 0.9
+
+maxJumpCount = 2
+jumpCounter = maxJumpCount
 
 def getZnak(num):
     if (num > 0):
@@ -66,10 +76,15 @@ def ground3d(scroll_x):
     for i in range(0,30,3):
         for block in blocks:
             rect = block.rect.copy()
-            rect.x -= scroll_x
+            rect.x -= scroll_x + i - 15
+            if (i > 15):
+                rect.x += i - 15
+                rect.width -= i - 15
             rect.y += i - 15
             rect.height += 15 - i
-            shade = max(0, 200 - i*5)
+            if (i < 15):
+                rect.height -= (15 - i)
+            shade = max(0, 200 - i * 5)
             pygame.draw.rect(screen, (shade, shade, shade), rect)
 
 def death():
@@ -116,24 +131,27 @@ def init_level():
     global blocks, triangles
 
     blocks = [
-        Block(-100, 400, 1200, 200),
-        Block(-250, -100, 400, 800),
-        Block(1100, -100, 1300, 800),
+        Block(0, 500, 400, 200),
+        Block(400, 575, 800, 200),
+        Block(850, 500, 400, 200),
 
+        Block(0, -50, 1200, 100),
+        Block(-300, -50, 400, 1000),
+
+        Block(1000, -50, 1300, 800),
     ]
 
     triangles = [
-        Triangle(blocks[0], offset_x=770, offset_y=-160, size=5)
     ]
+    for i in range(10):
+        triangles.append(Triangle(blocks[1], offset_x=25 + i * 45, offset_y=-25, size=40))
 
 def init_coins():
     global coins
     coins = [
-        Coin(350, 200),
-        Coin(450, 220),
-        Coin(550, 240),
-        Coin(650, 220),
-        Coin(750, 200),
+        Coin(650, 400, gravity=True),
+        Coin(300, 90),
+        Coin(900, 200, gravity=True),
     ]
 
 player = pygame.Rect(screen_w//2 - 20 - 200, screen_h//2 - 20 , 60, 60)
@@ -151,7 +169,7 @@ deadzone_right = screen_w // 2 + deadzone_width // 2
 
 camera_smooth_speed = 0.1
 
-door = Door(900, 400, width=60, height=100, coins_required=4)
+door = Door(900, 500, width=60, height=100, coins_required=1)
 
 coins_collected = 0
 font_coin = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
@@ -161,7 +179,7 @@ def draw_coin_counter(screen):
     screen.blit(text, (10, 10))
 
 def reset_game():
-    global player, vertical_momentum, on_ground, scroll_x, scroll_y, coins_collected
+    global player, vertical_momentum, on_ground, scroll_x, scroll_y, coins_collected, gravity, player_speed, jump_force
     player.x = screen_w//2 - 20 - 200
     player.y = screen_h//2 - 20
     vertical_momentum = 0
@@ -169,11 +187,14 @@ def reset_game():
     scroll_x = 0
     scroll_y = 0
     coins_collected = 0
+    gravity = 0.9
+    player_speed=5
+    jump_force=-15
     init_level()
     init_coins()
 
 def collisions(dx):
-    global vertical_momentum, on_ground
+    global vertical_momentum, on_ground, jumpCounter
 
     player.x += dx
     for block in blocks:
@@ -190,12 +211,19 @@ def collisions(dx):
     on_ground = False
     for block in blocks:
         if player.colliderect(block.rect):
-            if vertical_momentum > 0:
-                player.bottom = block.rect.top
+            if vertical_momentum * getZnak(gravity) > 0:
+                if getZnak(gravity) > 0:
+                    player.bottom = block.rect.top
+                else:
+                    player.top = block.rect.bottom
                 vertical_momentum = 0
+                jumpCounter = maxJumpCount
                 on_ground = True
-            elif vertical_momentum < 0:
-                player.top = block.rect.bottom
+            elif vertical_momentum * getZnak(gravity) < 0:
+                if getZnak(gravity) > 0:
+                    player.top = block.rect.bottom
+                else:
+                    player.bottom = block.rect.top
                 vertical_momentum = 0
 
     for triangle in triangles:
@@ -218,6 +246,7 @@ clock = pygame.time.Clock()
 running = True
 paused = False
 current_volume = 1.0  
+f = True
 
 pause_menu = PauseMenu(screen, current_volume)
 
@@ -258,9 +287,14 @@ while running:
         if keys[pygame.K_d]:
             dx = player_speed
 
-        if keys[pygame.K_SPACE] and on_ground:
+        if keys[pygame.K_SPACE] and jumpCounter > 0 and f:
             vertical_momentum = jump_force * getZnak(gravity)
             on_ground = False
+            jumpCounter -= 1
+            f = False
+
+        if not keys[pygame.K_SPACE]:
+            f = True
 
         collisions(dx)
 
@@ -268,7 +302,10 @@ while running:
             coin.update()
             if not coin.collected and coin.collide(player):
                 coin.collected = True
-                coins_collected += 1
+                if coin.gravity:
+                    gravity*= -1
+                else:
+                    coins_collected += 1
 
         player_screen_x = player.x - scroll_x
         player_screen_y = player.y - scroll_y

@@ -16,13 +16,14 @@ class Block:
         pygame.draw.rect(screen, self.color, draw_rect)
 
 class Triangle:
-    def __init__(self, parent_block, offset_x=0, offset_y=0, size=30, color=(0, 255, 0)):
+    def __init__(self, parent_block, offset_x=0, offset_y=0, size=30, isInvert=False, color=(0, 255, 0)):
         self.parent_block = parent_block
         self.offset_x = offset_x
         self.offset_y = offset_y
         self.size = size
+        self.isInvert = isInvert
         self.color = color
-        self.hitbox = pygame.Rect(0, 0, size, size)
+        self.hitbox = pygame.Rect(0, 0, size / 2, size)
         self.x = 0
         self.y = 0
 
@@ -32,11 +33,19 @@ class Triangle:
         self.hitbox.center = (self.x, self.y)
 
     def draw(self, screen, scroll_x, scroll_y):
-        points = [
-            (self.x - self.size//2 - scroll_x, self.y + self.size//2 - scroll_y),
-            (self.x - scroll_x, self.y - self.size - scroll_y),
-            (self.x + self.size//2 - scroll_x, self.y + self.size//2 - scroll_y)
-        ]
+        if self.isInvert:
+            points = [
+            (self.x - self.size // 2 - scroll_x, self.y - self.size // 2 - scroll_y),
+            (self.x - scroll_x, self.y + self.size / 1.6 - scroll_y),
+            (self.x + self.size // 2 - scroll_x, self.y - self.size // 2 - scroll_y)
+            ]
+        else:
+            points = [
+                (self.x - self.size // 2 - scroll_x, self.y + self.size // 2 - scroll_y),
+                (self.x - scroll_x, self.y - self.size / 1.6 - scroll_y),
+                (self.x + self.size // 2 - scroll_x, self.y + self.size // 2 - scroll_y)
+            ]
+            
         pygame.draw.polygon(screen, self.color, points)
 
 class Door:
