@@ -302,129 +302,127 @@ while running:
         pygame.display.flip()
 
     while menu == 2:
-            screen.fill((0, 0, 0))
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    menu = 0
-                elif event.type == pygame.MOUSEBUTTONDOWN and not click_blocked:
-                    if event.button == 1:
-                     
-                        if (screen_x / 2 - 300 + count <= event.pos[0] <= screen_x / 2 + count + 300) and (
-                                screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
-                         
-                            animation_active = True
-                            menu_triangles = [MenuTriangle() for _ in range(5)] 
-                            click_blocked = True
-                            loading_level = "file_1"
-                            loading_timer = 0
-                            loading_progress = 0
-                        
-                        elif (screen_x + count <= event.pos[0] <= screen_x + count + 600) and (
-                                screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
-                         
-                            animation_active = True
-                            menu_triangles = [MenuTriangle() for _ in range(5)] 
-                            click_blocked = True
-                            loading_level = "file_2"
-                            loading_timer = 0
-                            loading_progress = 0
-                        
-                        elif (screen_x + count + 700 <= event.pos[0] <= screen_x + count + 1300) and (
-                                screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
-                          
-                            animation_active = True
-                            menu_triangles = [MenuTriangle() for _ in range(5)] 
-                            click_blocked = True
-                            loading_level = "file_3"
-                            loading_timer = 0
-                            loading_progress = 0
-                        
-                       
-                        elif (screen_x + count + 1300 <= event.pos[0] <= screen_x + count + 1900) and (
-                                screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
-                            animation_active = True
-                            menu_triangles = [MenuTriangle() for _ in range(5)] 
-                            click_blocked = True
-                            loading_level = "file_4"
-                            loading_timer = 0
-                            loading_progress = 0
-                        
-                        elif (screen_x + count + 1900 <= event.pos[0] <= screen_x + count + 2600) and (
-                                screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
-                            animation_active = True
-                            menu_triangles = [MenuTriangle() for _ in range(5)] 
-                            click_blocked = True
-                            loading_level = "file_5"
-                            loading_timer = 0
-                            loading_progress = 0
-                        
-                        elif (screen_x + count + 2500 <= event.pos[0] <= screen_x + count + 3200) and (
-                                screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
-                            animation_active = True
-                            menu_triangles = [MenuTriangle() for _ in range(5)] 
-                            click_blocked = True
-                            loading_level = "file_6"
-                            loading_timer = 0
-                            loading_progress = 0
-                        
-                        elif (screen_x + count + 3100 <= event.pos[0] <= screen_x + count + 3800) and (
-                                screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
-                            animation_active = True
-                            menu_triangles = [MenuTriangle() for _ in range(5)] 
-                            click_blocked = True
-                            loading_level = "file_7"
-                            loading_timer = 0
-                            loading_progress = 0
-
-                    if event.button == 5 and count >= -4200:
-                        count -= 54
-                    if event.button == 4 and count <= 0:
-                        count += 54
-            
-            pygame.draw.rect(screen, (0, 0, 255), (screen_x / 2 - 300 + count, screen_y / 2 - 250, 600, 500))
-            text2()
-            
-            if loading_level:
-                loading_timer += 1
-                sound1.stop()
-                loading_progress = min(loading_timer, loading_max)
-                
-                if loading_progress >= loading_max:
-                    current_level = loading_level
-                    loading_level = None
-                    animation_active = False  
-            
-            if current_level:
-                try:
-                    module = importlib.import_module(current_level)
-                    module.main()
-                    current_level = None
-                    click_blocked = False
+        screen.fill((0, 0, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                menu = 0
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    menu = 1 
+                   
                     animation_active = False
                     animation_alpha = 10
                     menu_triangles = []
-                    loading_level = None
-                    loading_timer = 0
-                    loading_progress = 0
-                except Exception as e:
-                    current_level = None
-                    click_blocked = False
-                    animation_active = False
-                    animation_alpha = 10
-                    menu_triangles = []
-                    loading_level = None
-                    loading_timer = 0
-                    loading_progress = 0
+            elif event.type == pygame.MOUSEBUTTONDOWN and not click_blocked:
+                if event.button == 1: 
+                    if (screen_x / 2 - 300 + count <= event.pos[0] <= screen_x / 2 + count + 300) and (
+                            screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
+                        
+                        animation_active = True
+                        menu_triangles = [MenuTriangle() for _ in range(5)] 
+                        click_blocked = True
+                        loading_level = "file_1"
+                        loading_timer = 0
+                        loading_progress = 0
+                    
+                    elif (screen_x + count <= event.pos[0] <= screen_x + count + 600) and (
+                            screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
+                        
+                        animation_active = True
+                        menu_triangles = [MenuTriangle() for _ in range(5)] 
+                        click_blocked = True
+                        loading_level = "file_2"
+                        loading_timer = 0
+                        loading_progress = 0
+                    
+                    elif (screen_x + count + 700 <= event.pos[0] <= screen_x + count + 1300) and (
+                            screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
+                        
+                        animation_active = True
+                        menu_triangles = [MenuTriangle() for _ in range(5)] 
+                        click_blocked = True
+                        loading_level = "file_3"
+                        loading_timer = 0
+                        loading_progress = 0
+                    
+                    
+                    elif (screen_x + count + 1300 <= event.pos[0] <= screen_x + count + 1900) and (
+                            screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
+                        animation_active = True
+                        menu_triangles = [MenuTriangle() for _ in range(5)] 
+                        click_blocked = True
+                        loading_level = "file_4"
+                        loading_timer = 0
+                        loading_progress = 0
+                    
+                    elif (screen_x + count + 1900 <= event.pos[0] <= screen_x + count + 2600) and (
+                            screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
+                        animation_active = True
+                        menu_triangles = [MenuTriangle() for _ in range(5)] 
+                        click_blocked = True
+                        loading_level = "file_5"
+                        loading_timer = 0
+                        loading_progress = 0
+                    
+                    elif (screen_x + count + 2500 <= event.pos[0] <= screen_x + count + 3200) and (
+                            screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
+                        animation_active = True
+                        menu_triangles = [MenuTriangle() for _ in range(5)] 
+                        click_blocked = True
+                        loading_level = "file_6"
+                        loading_timer = 0
+                        loading_progress = 0
+                    
+                    elif (screen_x + count + 3100 <= event.pos[0] <= screen_x + count + 3800) and (
+                            screen_y / 2 - 250 <= event.pos[1] <= screen_y / 2 + 250):
+                        animation_active = True
+                        menu_triangles = [MenuTriangle() for _ in range(5)] 
+                        click_blocked = True
+                        loading_level = "file_7"
+                        loading_timer = 0
+                        loading_progress = 0
+                if event.button == 5 and count >= -4200:
+                    count -= 54
+                if event.button == 4 and count <= 0:
+                    count += 54
+        
+        pygame.draw.rect(screen, (0, 0, 255), (screen_x / 2 - 300 + count, screen_y / 2 - 250, 600, 500))
+        text2()
+        
+        if loading_level:
+            loading_timer += 1
+            sound1.stop()
+            loading_progress = min(loading_timer, loading_max)
             
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_d] and count >= -4200:
-                count -= 8
-            if keys[pygame.K_a] and count <= 0:
-                count += 8
-            
-            pixel()
-            pygame.display.flip()
+            if loading_progress >= loading_max:
+                current_level = loading_level
+                loading_level = None
+                animation_active = False
+        
+        if current_level:
+            try:
+                module = importlib.import_module(current_level)
+                module.main()
+                current_level = None
+                click_blocked = False
+                animation_active = False
+                animation_alpha = 10
+                menu_triangles = []
+            except Exception as e:
+                current_level = None
+                click_blocked = False
+                animation_active = False
+                animation_alpha = 10
+                menu_triangles = []
 
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_d] and count >= -4200:
+            count -= 8
+        if keys[pygame.K_a] and count <= 0:
+            count += 8
+        
+        pixel()
+        pygame.display.flip()
 
 pygame.quit()
