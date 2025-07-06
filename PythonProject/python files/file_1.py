@@ -30,7 +30,7 @@ color_BG = [random.randint(0,255) for _ in range(2000)]
 
 
 jump_force = -17
-gravity = 0.9
+gravity = -0.9
 
 def getZnak(num):
     if (num > 0):
@@ -132,11 +132,11 @@ def init_level():
 def init_coins():
     global coins
     coins = [
-        Coin(350, 200),
+        Coin(350, 200,gravity=True),
         Coin(450, 220),
-        Coin(550, 240),
+        Coin(550, 240,gravity=True),
         Coin(650, 220),
-        Coin(750, 200),
+        Coin(750, 200,gravity=True),
     ]
 
 player = pygame.Rect(screen_w//2 - 20 - 200, screen_h//2 - 20 , 60, 60)
@@ -243,7 +243,10 @@ while running:
         coin.update()
         if not coin.collected and coin.collide(player):
             coin.collected = True
-            coins_collected += 1
+            if coin.gravity:
+                gravity*= -1
+            else:
+                coins_collected += 1
 
     player_screen_x = player.x - scroll_x
     player_screen_y = player.y - scroll_y
