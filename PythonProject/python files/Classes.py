@@ -29,7 +29,7 @@ class Triangle:
     def update(self):
         self.x = self.parent_block.rect.x + self.offset_x
         self.y = self.parent_block.rect.y + self.offset_y
-        # self.hitbox.center = (self.x, self.y)
+        self.hitbox.center = (self.x, self.y)
 
     def draw(self, screen, scroll_x, scroll_y):
         points = [
@@ -420,7 +420,6 @@ class Sphere:
         return (x_proj, y_proj, z)
     
     def draw(self, screen):
-        """Отрисовка сферы"""
         projected = []
         for vertex in self.vertices:
             projected.append(self.project_point(vertex))

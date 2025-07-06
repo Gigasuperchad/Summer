@@ -98,6 +98,7 @@ def text():
     text_rect = text_surface.get_rect(center=(400, 300))
     screen.blit(text_surface, text_rect)
 
+
     text_surface = font.render("Exit", True, "black")
     text_rect = text_surface.get_rect(center=(screen_x//2, 400))
     screen.blit(text_surface, text_rect)
@@ -208,22 +209,19 @@ def text2():
         if animation_active and len(menu_triangles) < 100 and random.random() < 0.9:
             menu_triangles.append(MenuTriangle())
         
-        # Отображение прогресса загрузки
+      
         if loading_level:
             font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 50)
             progress_text = f'{loading_progress//3}%'
-            
-            # Черная тень
+             
             text_surface = font.render(progress_text, True, "black")
             text_rect = text_surface.get_rect(center=(397, 295)) 
             screen.blit(text_surface, text_rect)
             
-            # Белый основной текст
             text_surface = font.render(progress_text, True, (255, 255, 255))
             text_rect = text_surface.get_rect(center=(405, 300)) 
             screen.blit(text_surface, text_rect)
             
-            # Прогресс-бар
             pygame.draw.rect(screen, (255, 255, 255), (250, 400, loading_progress, 5))
             pygame.draw.rect(screen, (255, 255, 255), (243, 392.5, 315, 20), 4)
 
@@ -387,25 +385,20 @@ while running:
             pygame.draw.rect(screen, (0, 0, 255), (screen_x / 2 - 300 + count, screen_y / 2 - 250, 600, 500))
             text2()
             
-            # Обновление таймера загрузки
             if loading_level:
                 loading_timer += 1
                 sound1.stop()
                 loading_progress = min(loading_timer, loading_max)
                 
-                # Когда загрузка завершена
                 if loading_progress >= loading_max:
                     current_level = loading_level
                     loading_level = None
-                    animation_active = False  # Завершаем анимацию
+                    animation_active = False  
             
-            # Обработка загрузки уровня
             if current_level:
                 try:
                     module = importlib.import_module(current_level)
                     module.main()
-                    
-                    # Сброс состояния после возврата из уровня
                     current_level = None
                     click_blocked = False
                     animation_active = False

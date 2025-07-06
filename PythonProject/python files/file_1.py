@@ -39,7 +39,6 @@ def getZnak(num):
         return -1
     return 0
 
-
 player_speed = 5
 
 current_level = None
