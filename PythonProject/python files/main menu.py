@@ -12,7 +12,7 @@ with open("../titles/title.txt", "r") as file:
 pygame.init()
 pygame.mixer.init()
 sound1 = pygame.mixer.Sound("../music/Mus_ANOTHER_HIM.oga")
-sound1.play(-1).set_volume(0.0)
+sound1.play(-1).set_volume(0.3)
 
 screen_x, screen_y = 800, 600
 screen = pygame.display.set_mode((screen_x, screen_y))
@@ -105,15 +105,11 @@ while running:
                 if event.button == 1:
                     if (365 <= event.pos[0] <= 435) and (
                             280 <= event.pos[1] <= 330):
-                        current_level = "menu"
                         menu = 2
                     if (screen_x//2 - 50 <= event.pos[0] <= screen_x//2 + 60) and (375 <= event.pos[1] <= 400):
                         running = False
                         menu = 0
-                if event.button ==5:
-                    count -= 50
-                if event.button == 4:
-                    count += 50
+
         backgoround()
         ground3d()
         
