@@ -235,6 +235,7 @@ while running:
 
     if keys[pygame.K_SPACE] and on_ground:
         vertical_momentum = jump_force * getZnak(gravity)
+        # gravity *= -1
         on_ground = False
 
     collisions(dx)

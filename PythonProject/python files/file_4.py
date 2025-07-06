@@ -20,6 +20,9 @@ sound.play().set_volume(0.3)
 jump_force = -17
 gravity = 0.9
 
+maxJumpCount = 2
+jumpCounter = maxJumpCount
+
 def getZnak(num):
     if (num > 0):
         return 1
@@ -157,7 +160,7 @@ def reset_game():
     init_coins()
 
 def collisions(dx):
-    global vertical_momentum, on_ground
+    global vertical_momentum, jumpCounter
 
     player.x += dx
     for block in blocks:
@@ -171,13 +174,12 @@ def collisions(dx):
     vertical_momentum += gravity
     player.y += vertical_momentum
 
-    on_ground = False
     for block in blocks:
         if player.colliderect(block.rect):
             if vertical_momentum > 0:
                 player.bottom = block.rect.top
                 vertical_momentum = 0
-                on_ground = True
+                jumpCounter = maxJumpCount
             elif vertical_momentum < 0:
                 player.top = block.rect.bottom
                 vertical_momentum = 0
@@ -193,6 +195,7 @@ running = True
 
 reset_game()
 
+f = True
 grid_bg = GridBackground(screen_w, screen_h)
 def background(screen, scroll_x, scroll_y):
     grid_bg.update()
@@ -222,8 +225,15 @@ while running:
     if keys[pygame.K_d]:
         dx = player_speed
 
-    if keys[pygame.K_SPACE] and on_ground:
+
+    if not keys[pygame.K_SPACE]:
+        f = True
+
+    if keys[pygame.K_SPACE] and jumpCounter > 0 and f:
         vertical_momentum = jump_force
+        jumpCounter -= 1
+        f = False
+
         on_ground = False
     
     collisions(dx)
