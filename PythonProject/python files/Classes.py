@@ -310,7 +310,109 @@ class Cube:
             end = projected[edge[1]]
             pygame.draw.line(screen, (200, 230, 255), start[:2], end[:2], 1)
 
+import pygame
+import math
 
+class Token:
+    def __init__(self, x, y, size=40, color=(0, 255, 0)):
+        self.x = x
+        self.y = y
+        self.base_y = y
+        self.size = size
+        self.collected = False
+        self.color = color
+
+        # Создаём поверхность чуть больше, чтобы обводка не обрезалась
+        self.image = pygame.Surface((self.size + 4, self.size + 4), pygame.SRCALPHA)
+
+        half = (self.size + 4) / 2
+
+        # Точки ромба — ровнее, с плавающей точкой и округлением
+        points = [
+            (round(half), 2),                 # Верхняя вершина (с отступом 2px сверху)
+            (self.size + 2, round(half)),    # Правая вершина (2px справа)
+            (round(half), self.size + 2),    # Нижняя вершина (2px снизу)
+            (2, round(half))                 # Левая вершина (2px слева)
+        ]
+
+        # Заливка
+        pygame.draw.polygon(self.image, self.color, points)
+
+        # Тёмная обводка (толщина 3)
+        dark_color = (max(self.color[0] - 80, 0),
+                      max(self.color[1] - 80, 0),
+                      max(self.color[2] - 80, 0))
+        pygame.draw.polygon(self.image, dark_color, points, width=3)
+
+        # Рисуем символы по центру
+        self._draw_symbol(dark_color, half)
+
+        self.rect = pygame.Rect(self.x, self.y, self.size + 4, self.size + 4)
+
+        self.float_offset = 0
+        self.float_speed = 0.05
+        self.float_amplitude = 5
+        self.float_angle = 0
+
+    def _draw_symbol(self, dark_color, center):
+        surf = self.image
+
+        if self.color == (255, 0, 0):  # Красный - две стрелки вправо
+            self._draw_double_arrow(surf, center, center, dark_color, direction='right')
+        elif self.color == (0, 255, 255):  # Синий - две стрелки влево
+            self._draw_double_arrow(surf, center, center, dark_color, direction='left')
+        elif self.color == (0, 255, 0):  # Зеленый - кружок
+            radius = self.size // 8
+            pygame.draw.circle(surf, (0,0,0), (int(center), int(center)), radius)
+
+    def _draw_double_arrow(self, surf, x, y, color, direction='right'):
+        # Узкая ширина и большая высота
+        arrow_width = self.size / 8  # узкая по горизонтали
+        arrow_height = self.size / 2  # высокая по вертикали
+        gap = arrow_width   # небольшой промежуток между стрелками
+
+        def make_arrow_points(x0, y0, w, h, dir):
+            if dir == 'right':
+                return [
+                    (x0 + w, y0),  # острие стрелки справа
+                    (x0, y0 - h / 2),  # верхняя точка
+                    (x0, y0 + h / 2)  # нижняя точка
+                ]
+            else:  # left
+                return [
+                    (x0 - w, y0),  # острие слева
+                    (x0 , y0 - h / 2),  # верхняя точка основания справа
+                    (x0 , y0 + h / 2)  # нижняя точка основания справа
+                ]
+
+        if direction == 'right':
+            # Левая стрелка
+            pts1 = make_arrow_points(x - gap, y, arrow_width, arrow_height, 'right')
+            # Правая стрелка
+            pts2 = make_arrow_points(x + gap , y, arrow_width, arrow_height, 'right')
+        else:  # left
+            # Левая стрелка
+            pts1 = make_arrow_points(x - gap , y, arrow_width, arrow_height, 'left')
+            # Правая стрелка
+            pts2 = make_arrow_points(x + gap , y, arrow_width, arrow_height, 'left')
+
+        pygame.draw.polygon(surf, (0,0,0), pts1)
+        pygame.draw.polygon(surf, (0,0,0), pts2)
+
+    def update(self):
+        self.float_angle += self.float_speed
+        if self.float_angle > 2 * math.pi:
+            self.float_angle -= 2 * math.pi
+        self.float_offset = math.sin(self.float_angle) * self.float_amplitude
+        self.rect.y = int(self.base_y + self.float_offset)
+
+    def draw(self, screen, scroll_x=0, scroll_y=0):
+        draw_x = self.rect.x - scroll_x
+        draw_y = self.rect.y - scroll_y
+        screen.blit(self.image, (draw_x, draw_y))
+
+    def collide(self, player_rect):
+        return self.rect.colliderect(player_rect)
 class GridBackground:
     def __init__(self, screen_width=1000, screen_height=1000):
         self.screen_width = screen_width
