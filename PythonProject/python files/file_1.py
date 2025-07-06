@@ -2,8 +2,7 @@ import pygame
 import random
 import math
 import importlib
-from Classes import Block, Triangle, Door, Coin, Token
-from Classes import Block, Triangle, Door, Coin, PauseMenu
+from Classes import Block, Triangle, Door, Coin, PauseMenu, Token
 
 pygame.init()
 
@@ -301,16 +300,16 @@ while running:
     player_screen_x = player.x - scroll_x
     player_screen_y = player.y - scroll_y
 
-        target_scroll_x = scroll_x
-        target_scroll_y = scroll_y
+    target_scroll_x = scroll_x
+    target_scroll_y = scroll_y
 
-        if player_screen_x < deadzone_left:
-            target_scroll_x -= (deadzone_left - player_screen_x)
-        elif player_screen_x > deadzone_right:
-            target_scroll_x += (player_screen_x - deadzone_right)
+    if player_screen_x < deadzone_left:
+        target_scroll_x -= (deadzone_left - player_screen_x)
+    elif player_screen_x > deadzone_right:
+        target_scroll_x += (player_screen_x - deadzone_right)
 
-        scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
-        scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
+    scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
+    scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
 
     screen.fill((0,0,0))
 
