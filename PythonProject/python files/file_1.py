@@ -121,6 +121,7 @@ def init_level():
         Block(-100, 400, 1200, 200),
         Block(-250, -100, 400, 800),
         Block(1100, -100, 1300, 800),
+        Block(0, -100, 1200, 100),
 
     ]
 
@@ -256,10 +257,9 @@ while running:
         if keys[pygame.K_d]:
             dx = player_speed
 
-    if keys[pygame.K_SPACE] and on_ground:
-        vertical_momentum = jump_force * getZnak(gravity)
-        # gravity *= -1
-        on_ground = False
+        if keys[pygame.K_SPACE] and on_ground:
+            vertical_momentum = jump_force * getZnak(gravity)
+            on_ground = False
 
         collisions(dx)
 
@@ -269,8 +269,8 @@ while running:
             coin.collected = True
             if coin.gravity:
                 gravity*= -1
-            else:
-                coins_collected += 1
+            # else:
+            coins_collected += 1
 
         player_screen_x = player.x - scroll_x
         player_screen_y = player.y - scroll_y

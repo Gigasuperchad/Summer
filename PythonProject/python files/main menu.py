@@ -15,7 +15,7 @@ icon = pygame.image.load("../pictures/КАРТИНОЧКА.png")
 pygame.display.set_icon(icon)
 
 pygame.mixer.init()
-sound1 = pygame.mixer.Sound("../music/Mus_ANOTHER_HIM.oga")
+sound1 = pygame.mixer.Sound("../music/Home_-_Resonance_75115125.mp3")
 sound1.play(-1).set_volume(0.3)
 
 screen_x, screen_y = 800, 600
@@ -261,8 +261,8 @@ while running:
                 menu = 0
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if (365 <= event.pos[0] <= 435) and (
-                            280 <= event.pos[1] <= 330):
+                    if (365 <= event.pos[0] <= 435) and (280 <= event.pos[1] <= 330):
+                        current_level = "menu"
                         menu = 2
                     if (screen_x//2 - 50 <= event.pos[0] <= screen_x//2 + 60) and (375 <= event.pos[1] <= 400):
                         running = False

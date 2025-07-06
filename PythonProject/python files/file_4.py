@@ -187,7 +187,6 @@ running = True
 
 reset_game()
 
-f = True
 grid_bg = GridBackground(screen_w, screen_h)
 
 a = [random.randint(-1000, 1000) for _ in range(5000)]
@@ -202,6 +201,7 @@ def background(scroll_x, scroll_y):
 paused = False
 current_volume = 1.0  
 pause_menu = PauseMenu(screen, current_volume)
+f = True
 
 while running:
     dt = clock.tick(60) / 1000
@@ -241,6 +241,11 @@ while running:
         
         collisions(dx)
 
+        for coin in coins:
+            coin.update()
+            if not coin.collected and coin.collide(player):
+                coin.collected = True
+                coins_collected += 1
 
     if not keys[pygame.K_SPACE]:
         f = True
@@ -249,15 +254,6 @@ while running:
         vertical_momentum = jump_force
         jumpCounter -= 1
         f = False
-
-        on_ground = False
-    
-    collisions(dx)
-        for coin in coins:
-            coin.update()
-            if not coin.collected and coin.collide(player):
-                coin.collected = True
-                coins_collected += 1
 
         player_screen_x = player.x - scroll_x
         player_screen_y = player.y - scroll_y
