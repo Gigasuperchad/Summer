@@ -319,7 +319,7 @@ while running:
                         animation_active = True
                         menu_triangles = [MenuTriangle() for _ in range(5)] 
                         click_blocked = True
-                        loading_level = "file_7"
+                        loading_level = "file_1"
                         loading_timer = 0
                         loading_progress = 0
                     
