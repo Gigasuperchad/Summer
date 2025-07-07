@@ -184,9 +184,8 @@ def init_coins():
 def init_tokens():
     global tokens
     tokens = [
-        Token(-1500, 350, color=(255, 0, 0)),   # Красный - скорость = 10, прыжок = -20
-        Token(-2650, 260),   # Зеленый - скорость = 5, прыжок = -15
-        # Token(500, 200, color=(0,255,255)),   # Синий - скорость = 1, прыжок = -10
+        Token(-1500, 350, color=(255, 0, 0)),
+        Token(-2650, 260),
     ]
 
 player = pygame.Rect(screen_w//2 - 20 - 200, screen_h//2 - 20 , 60, 60)
@@ -338,7 +337,6 @@ while running:
             token.update()
             if not token.collected and token.collide(player):
                 token.collected = True
-                # Изменяем скорость игрока в зависимости от цвета жетона
                 if token.color == (255, 0, 0):
                     player_speed = 10
                     gravity = 0.5 * getZnak(gravity)
@@ -359,11 +357,9 @@ while running:
         elif player_screen_x > deadzone_right:
             target_scroll_x += (player_screen_x - deadzone_right)
 
-        # Плавно приближаемся к целевой позиции камеры
         scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
         scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
 
-    # Отрисовка игры
     screen.fill((0,0,0))
 
     background()
@@ -386,7 +382,6 @@ while running:
 
     door.draw(screen, coins_collected, scroll_x, scroll_y)
 
-    # Проверка двери только вне паузы
     if not paused and door.collide(player):
         font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 30)
         if door.is_open(coins_collected):
@@ -407,7 +402,6 @@ while running:
 
     draw_coin_counter(screen)
 
-    # Отрисовка меню паузы поверх всего
     if paused:
         pause_menu.draw()
 
@@ -416,7 +410,6 @@ while running:
         module = importlib.import_module(current_level)
         module.main()
 
-    # Проверка смерти только вне паузы
     if not paused and player.y > 900 or player.y < -300:
         death()
 

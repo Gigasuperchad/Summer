@@ -131,8 +131,7 @@ def init_coins():
 def init_tokens():
     global tokens
     tokens = [
-        Token(275, 400, color=(255, 0, 0)),   # Красный - скорость = 10, прыжок = -20
-        # Token(1300, 150),   # Зеленый - скорость = 5, прыжок = -15
+        Token(275, 400, color=(255, 0, 0)),
     ]
 
 player = pygame.Rect(screen_w // 2 - 20 - 200, screen_h // 2 - 20, 60, 60)
@@ -301,7 +300,6 @@ while running:
             token.update()
             if not token.collected and token.collide(player):
                 token.collected = True
-                # Изменяем скорость игрока в зависимости от цвета жетона
                 if token.color == (255, 0, 0):
                     player_speed = 5
                     gravity = 0.5 * getZnak(gravity)

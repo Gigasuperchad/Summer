@@ -120,7 +120,6 @@ def init_level():
         Block(1400, 250, 50, 500),
         Block(1700, 250, 55, 50),
         Block(2000, 250, 200, 15),
-        # Block(200, -50, 1205, 100),
     ]
 
     triangles = [
@@ -149,8 +148,7 @@ def init_coins():
 def init_tokens():
     global tokens
     tokens = [
-        Token(550, 500, color=(255, 0, 0)),   # Красный - скорость = 10, прыжок = -20
-        # Token(1300, 150),   # Зеленый - скорость = 5, прыжок = -15
+        Token(550, 500, color=(255, 0, 0)),
     ]
 
 
@@ -343,7 +341,6 @@ while running:
             token.update()
             if not token.collected and token.collide(player):
                 token.collected = True
-                # Изменяем скорость игрока в зависимости от цвета жетона
                 if token.color == (255, 0, 0):
                     player_speed = 5
                     gravity = 0.5 * getZnak(gravity)
