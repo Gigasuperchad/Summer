@@ -110,7 +110,7 @@ def init_level():
     for i in range(4):
         triangles.append(Triangle(blocks[2], offset_x=25 + i * 50, offset_y=70, size=40, isInvert=True))
     for i in range(8):
-        triangles.append(Triangle(blocks[3], offset_x=150 + 25 + i * 50, offset_y=120, size=40, isInvert=True))
+        triangles.append(Triangle(blocks[3], offset_x=150 + 25 + i * 50, offset_y=370, size=40, isInvert=True))
     for i in range(4):
         triangles.append(Triangle(blocks[5], offset_x= 25 + i * 50, offset_y=50, size=40, isInvert=True))
 
