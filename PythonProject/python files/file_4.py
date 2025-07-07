@@ -320,28 +320,7 @@ while running:
         if not keys[pygame.K_SPACE]:
             f = True
 
-        door_collision = door.collide(player)
-        if door_collision:
-            font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 30)
-            if door.is_open(coins_collected):
-                msg = font.render("Дверь открыта! Нажмите E для перехода", True, (255, 0, 150))
-                screen.blit(msg, (screen_w // 2 - msg.get_width() // 2, 50))
-
-                if keys[pygame.K_e]:
-                    current_level = "file_5"
-                    sound.stop()
-                    try:
-                        module = importlib.import_module(current_level)
-                        module.main()
-                        reset_game()
-                        sound.play().set_volume(0.3)
-                    except ImportError:
         
-                        current_level = None
-            else:
-                coins_needed = door.coins_required - coins_collected
-                msg = font.render(f"Нужно собрать ещё {coins_needed} монет для перехода", True, (255, 0, 150))
-                screen.blit(msg, (screen_w // 2 - msg.get_width() // 2, 50))
 
     screen.fill((0, 0, 0))
     background(scroll_x, scroll_y)
@@ -364,6 +343,29 @@ while running:
             token.draw(screen, int(scroll_x), int(scroll_y))
 
     door.draw(screen, coins_collected, scroll_x, scroll_y)
+
+    door_collision = door.collide(player)
+    if door_collision and not paused:
+        font = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 30)
+        if door.is_open(coins_collected):
+            msg = font.render("Дверь открыта! Нажмите E для перехода", True, (255, 0, 150))
+            screen.blit(msg, (screen_w // 2 - msg.get_width() // 2, 50))
+
+            if keys[pygame.K_e]:
+                current_level = "file_5"
+                sound.stop()
+                try:
+                    module = importlib.import_module(current_level)
+                    module.main()
+                    reset_game()
+                    sound.play().set_volume(0.3)
+                except ImportError:
+        
+                    current_level = None
+        else:
+            coins_needed = door.coins_required - coins_collected
+            msg = font.render(f"Нужно собрать ещё {coins_needed} монет для перехода", True, (255, 0, 150))
+            screen.blit(msg, (screen_w // 2 - msg.get_width() // 2, 50))
 
     player_draw_rect = player.copy()
     player_draw_rect.x -= int(scroll_x)
