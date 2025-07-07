@@ -296,6 +296,7 @@ while running:
         if not keys[pygame.K_SPACE]:
             f = True
 
+        tempPlayerX = player.x
         collisions(dx)
 
         for coin in coins:
@@ -321,6 +322,7 @@ while running:
         scroll_x += (target_scroll_x - scroll_x) * camera_smooth_speed
         scroll_y += (target_scroll_y - scroll_y) * camera_smooth_speed
         for cube in cubes:
+            cube.velocity_x = (tempPlayerX - player.x) / 5
             cube.update()
     screen.fill((0,0,0))
     background(int(scroll_x), int(scroll_y))
