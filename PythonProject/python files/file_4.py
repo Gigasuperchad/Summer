@@ -372,7 +372,7 @@ while running:
     if paused:
         pause_menu.draw()
 
-    if not paused and player.y > 900:
+    if not paused and (player.y > 900 or player.y < -300):
         death()
 
     pygame.display.flip()
