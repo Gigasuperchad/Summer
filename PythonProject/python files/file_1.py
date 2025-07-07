@@ -377,7 +377,6 @@ while running:
     if (player.y > 900) or (player.y < -300):
         death()
 
-
     if paused:
         pause_menu.draw()
 
