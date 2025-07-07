@@ -118,6 +118,9 @@ def init_coins():
     global coins
     coins = [
         Coin(525, 350, gravity=True),
+        Coin(560, 330),
+        Coin(560, 250),
+        Coin(560, 290),
         Coin(525, 510, gravity=True),
         Coin(1300, 300, gravity=True),
         Coin(1300, 350),
@@ -147,7 +150,7 @@ deadzone_right = screen_w // 2 + deadzone_width // 2
 
 camera_smooth_speed = 0.1
 
-door = Door(1800, 400, width=60, height=100, coins_required=2)
+door = Door(1800, 400, width=60, height=100, coins_required=5)
 
 coins_collected = 0
 font_coin = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
