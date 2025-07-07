@@ -2,7 +2,7 @@ import pygame
 import random
 import importlib
 import sys
-from Classes import Block, Triangle, Door, Coin, GridBackground, PauseMenu
+from Classes import Block, Triangle, Door, Coin, GridBackground, PauseMenu, Token
 
 pygame.init()
 
@@ -93,32 +93,43 @@ def init_level():
     global blocks, triangles
 
     blocks = [
-        Block(-100, 400, 1200, 200),
-        Block(-250, -100, 400, 800),
-        Block(1100, -200, 30, 500),
-        Block(1100, 400, 1300, 800),
-        Block(1100, 300, 1100, 5),
-        Block(2300, -100, 400, 800),
+        Block(100, 500, 300, 200),
+        Block(250, 300, 100, 15),
+        Block(600, 300, 200, 50),
+        Block(600, -50, 600, 100),
+        Block(1150, -50, 420, 150),
+        Block(1200, 435, 400, 30),
+        Block(600, 150, 50, 175),
+        Block(1550, -50, 50, 515),
+        Block(1700, 400, 299, 500),
     ]
 
     triangles = [
-        Triangle(blocks[0], offset_x=870, offset_y=-5, size=15),
-        Triangle(blocks[0], offset_x=770, offset_y=-5, size=15),
-        Triangle(blocks[0], offset_x=670, offset_y=-5, size=15),
-        Triangle(blocks[0], offset_x=570, offset_y=-5, size=15),
-        Triangle(blocks[0], offset_x=470, offset_y=-5, size=15),
-        Triangle(blocks[0], offset_x=370, offset_y=-5, size=15)
+        Triangle(blocks[2], offset_x= 25 + 150, offset_y=-20, size=40),
     ]
+    for i in range(4):
+        triangles.append(Triangle(blocks[2], offset_x=25 + i * 50, offset_y=70, size=40, isInvert=True))
+    for i in range(8):
+        triangles.append(Triangle(blocks[3], offset_x=150 + 25 + i * 50, offset_y=120, size=40, isInvert=True))
+    for i in range(4):
+        triangles.append(Triangle(blocks[5], offset_x= 25 + i * 50, offset_y=50, size=40, isInvert=True))
 
 def init_coins():
     global coins
     coins = [
-        Coin(300, 340),
-        Coin(400, 340),
-        Coin(500, 340),
-        Coin(600, 340),
-        Coin(700, 340),
-        Coin(1150, 240)
+        Coin(525, 350, gravity=True),
+        Coin(525, 510, gravity=True),
+        Coin(1300, 300, gravity=True),
+        Coin(1300, 350),
+        Coin(1640, 320, gravity=True),
+        Coin(800, 150),
+    ]
+
+def init_tokens():
+    global tokens
+    tokens = [
+        Token(275, 400, color=(255, 0, 0)),   # Красный - скорость = 10, прыжок = -20
+        # Token(1300, 150),   # Зеленый - скорость = 5, прыжок = -15
     ]
 
 player = pygame.Rect(screen_w // 2 - 20 - 200, screen_h // 2 - 20, 60, 60)
@@ -136,7 +147,7 @@ deadzone_right = screen_w // 2 + deadzone_width // 2
 
 camera_smooth_speed = 0.1
 
-door = Door(900, 400, width=60, height=100, coins_required=6)
+door = Door(1800, 400, width=60, height=100, coins_required=2)
 
 coins_collected = 0
 font_coin = pygame.font.Font("../fonts/RuneScape-ENA.ttf", 40)
@@ -146,7 +157,7 @@ def draw_coin_counter(screen):
     screen.blit(text, (10, 10))
 
 def reset_game():
-    global player, vertical_momentum, on_ground, scroll_x, scroll_y, coins_collected, jumpCounter
+    global player, vertical_momentum, on_ground, scroll_x, scroll_y, coins_collected, jumpCounter, gravity, player_speed, jump_force
     player.x = screen_w // 2 - 20 - 200
     player.y = screen_h // 2 - 20
     vertical_momentum = 0
@@ -155,8 +166,12 @@ def reset_game():
     scroll_y = 0
     coins_collected = 0
     jumpCounter = maxJumpCount
+    gravity = 0.9
+    player_speed=5
+    jump_force=-15
     init_level()
     init_coins()
+    init_tokens()
 
 def collisions(dx):
     global vertical_momentum, jumpCounter, on_ground
@@ -177,14 +192,21 @@ def collisions(dx):
 
     for block in blocks:
         if player.colliderect(block.rect):
-            if vertical_momentum > 0:
-                player.bottom = block.rect.top
+            if vertical_momentum * getZnak(gravity) > 0:
+                if getZnak(gravity) > 0:
+                    player.bottom = block.rect.top
+                else:
+                    player.top = block.rect.bottom
                 vertical_momentum = 0
                 jumpCounter = maxJumpCount
                 on_ground = True
-            elif vertical_momentum < 0:
-                player.top = block.rect.bottom
+            elif vertical_momentum * getZnak(gravity) < 0:
+                if getZnak(gravity) > 0:
+                    player.top = block.rect.bottom
+                else:
+                    player.bottom = block.rect.top
                 vertical_momentum = 0
+
 
     for triangle in triangles:
         triangle.update()
@@ -268,10 +290,28 @@ while running:
             coin.update()
             if not coin.collected and coin.collide(player):
                 coin.collected = True
-                coins_collected += 1
+                if coin.gravity:
+                    gravity*= -1
+                else:
+                    coins_collected += 1
+
+        for token in tokens:
+            token.update()
+            if not token.collected and token.collide(player):
+                token.collected = True
+                # Изменяем скорость игрока в зависимости от цвета жетона
+                if token.color == (255, 0, 0):
+                    player_speed = 5
+                    gravity = 0.5 * getZnak(gravity)
+                elif token.color == (0, 255, 0):
+                    player_speed = 5
+                    gravity = 0.9 * getZnak(gravity)
+                elif token.color == (0, 255, 255):
+                    player_speed = 5
+                    gravity = 2 * getZnak(gravity)
                 
         if keys[pygame.K_SPACE] and jumpCounter > 0 and f:
-            vertical_momentum = jump_force
+            vertical_momentum = jump_force * getZnak(gravity)
             jumpCounter -= 1
             f = False
 
@@ -318,6 +358,10 @@ while running:
     for coin in coins:
         if not coin.collected:
             coin.draw(screen, int(scroll_x), int(scroll_y))
+
+    for token in tokens:
+        if not token.collected:
+            token.draw(screen, int(scroll_x), int(scroll_y))
 
     door.draw(screen, coins_collected, scroll_x, scroll_y)
 
